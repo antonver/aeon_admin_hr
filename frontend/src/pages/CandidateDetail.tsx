@@ -50,6 +50,7 @@ const CandidateDetail: React.FC = () => {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [telegramMessage, setTelegramMessage] = useState('');
+  const [showFormatModal, setShowFormatModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -185,6 +186,30 @@ const CandidateDetail: React.FC = () => {
     }
   };
 
+  // New handler for sending candidate data in selected format
+  const handleSendCandidateData = async (format: string) => {
+    if (!candidate) return;
+    try {
+      const response = await fetch(`/api/candidates/${candidate.id}/send-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ format }),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setActionMessage(result.message || 'Данные отправлены');
+      } else {
+        const error = await response.json();
+        setActionMessage(error.detail || 'Ошибка отправки данных');
+      }
+    } catch (error) {
+      setActionMessage('Ошибка отправки данных');
+    } finally {
+      setShowFormatModal(false);
+      setTimeout(() => setActionMessage(null), 3000);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -210,6 +235,27 @@ const CandidateDetail: React.FC = () => {
       {actionMessage && (
         <div className="fixed top-4 right-4 bg-main text-white px-6 py-3 rounded-lg shadow-lg z-50">
           {actionMessage}
+        </div>
+      )}
+      {/* Format Selection Modal */}
+      {showFormatModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-xs">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-subheaders text-background font-bold">Выберите формат</h2>
+              <button
+                onClick={() => setShowFormatModal(false)}
+                className="text-background-2 hover:text-background"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData('csv')}>CSV</button>
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData('md')}>Markdown</button>
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData('json')}>JSON</button>
+            </div>
+          </div>
         </div>
       )}
       {/* Модальное окно Telegram */}
@@ -395,7 +441,7 @@ const CandidateDetail: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Быстрые действия</h2>
             <div className="space-y-3">
               <button
-                onClick={() => handleQuickAction('invite_test')}
+                onClick={() => setShowFormatModal(true)}
                 className="w-full btn-primary flex items-center justify-center space-x-2"
               >
                 <Send className="h-4 w-4" />
@@ -418,6 +464,15 @@ const CandidateDetail: React.FC = () => {
               >
                 <Copy className="h-4 w-4" />
                 <span>Скопировать данные</span>
+              </button>
+              {/* Share button, no functionality for now */}
+              <button
+                className="w-full btn-secondary flex items-center justify-center space-x-2"
+                title="Поделиться"
+                type="button"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>Поделиться</span>
               </button>
             </div>
           </div>
@@ -453,34 +508,6 @@ const CandidateDetail: React.FC = () => {
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Статистика */}
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Статистика</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Вопросов в интервью:</span>
-                <span className="text-sm font-medium">{interviewLogs.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Средний балл:</span>
-                <span className="text-sm font-medium">
-                  {interviewLogs.length > 0
-                    ? Math.round(
-                        interviewLogs
-                          .filter(log => log.score)
-                          .reduce((sum, log) => sum + (log.score || 0), 0) /
-                        interviewLogs.filter(log => log.score).length
-                      )
-                    : 'Нет данных'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Комментариев HR:</span>
-                <span className="text-sm font-medium">{comments.length}</span>
-              </div>
             </div>
           </div>
         </div>

@@ -7,7 +7,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import SessionLocal, Candidate, InterviewLog, Comment
+import bcrypt
+from app.database import SessionLocal, Candidate, InterviewLog, Comment, User
 from datetime import datetime, timedelta
 import random
 
@@ -189,7 +190,24 @@ def create_test_candidates():
     finally:
         db.close()
 
+
+def create_admin_user():
+    db = SessionLocal()
+    email = "admin@example.com"
+    password = "admin123"
+    name = "Admin"
+    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    if not db.query(User).filter(User.email == email).first():
+        user = User(name=name, email=email, password=hashed_password)
+        db.add(user)
+        db.commit()
+        print(f"✅ Admin user created: {email} / {password}")
+    else:
+        print("Admin user already exists.")
+    db.close()
+
 if __name__ == "__main__":
     print("🚀 Создание тестовых кандидатов...")
-    create_test_candidates()
+    # create_test_candidates()
+    create_admin_user()
     print("\n✨ Готово! Теперь можно тестировать приложение.") 

@@ -51,6 +51,8 @@ const CandidatesList: React.FC = () => {
   const [telegramCandidateId, setTelegramCandidateId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [showFormatModal, setShowFormatModal] = useState(false);
+  const [formatCandidateId, setFormatCandidateId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCandidates();
@@ -183,6 +185,30 @@ const CandidatesList: React.FC = () => {
     }
   };
 
+  // New handler for sending candidate data in selected format
+  const handleSendCandidateData = async (candidateId: number, format: string) => {
+    try {
+      const response = await fetch(`/api/candidates/${candidateId}/send-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ format }),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setActionMessage(result.message || 'Данные отправлены');
+      } else {
+        const error = await response.json();
+        setActionMessage(error.detail || 'Ошибка отправки данных');
+      }
+    } catch (error) {
+      setActionMessage('Ошибка отправки данных');
+    } finally {
+      setShowFormatModal(false);
+      setFormatCandidateId(null);
+      setTimeout(() => setActionMessage(null), 3000);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -257,6 +283,27 @@ const CandidatesList: React.FC = () => {
               >
                 Отмена
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Format Selection Modal */}
+      {showFormatModal && formatCandidateId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-xs">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-subheaders text-background font-bold">Выберите формат</h2>
+              <button
+                onClick={() => { setShowFormatModal(false); setFormatCandidateId(null); }}
+                className="text-background-2 hover:text-background"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'csv')}>CSV</button>
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'md')}>Markdown</button>
+              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'json')}>JSON</button>
             </div>
           </div>
         </div>
@@ -399,9 +446,9 @@ const CandidatesList: React.FC = () => {
                         </button>
                       )}
                       <button
-                        onClick={() => handleQuickAction(candidate.id, 'invite_test')}
+                        onClick={() => { setFormatCandidateId(candidate.id); setShowFormatModal(true); }}
                         className="p-2 text-background-2 hover:text-accept transition-colors"
-                        title="Пригласить на тест"
+                        title="Отправить данные в Telegram"
                       >
                         <Send className="w-5 h-5" />
                       </button>

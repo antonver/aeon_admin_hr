@@ -11,7 +11,6 @@ interface Metrics {
   total_candidates: number;
   active_candidates: number;
   test_pass_rate: number;
-  weak_questions: string[];
 }
 
 interface StatusDistribution {
@@ -46,7 +45,6 @@ const Metrics: React.FC = () => {
   const [overview, setOverview] = useState<Metrics | null>(null);
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
   const [activityTimeline, setActivityTimeline] = useState<ActivityTimeline | null>(null);
-  const [categoryStats, setCategoryStats] = useState<CategoryStats | null>(null);
   const [topCandidates, setTopCandidates] = useState<TopCandidate[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,26 +58,22 @@ const Metrics: React.FC = () => {
         overviewRes,
         statusRes,
         activityRes,
-        categoryRes,
         topRes
       ] = await Promise.all([
         fetch('/api/metrics/overview'),
         fetch('/api/metrics/status-distribution'),
         fetch('/api/metrics/activity-timeline'),
-        fetch('/api/metrics/interview-stats'),
         fetch('/api/metrics/top-candidates')
       ]);
 
       const overviewData = await overviewRes.json();
       const statusData = await statusRes.json();
       const activityData = await activityRes.json();
-      const categoryData = await categoryRes.json();
       const topData = await topRes.json();
 
       setOverview(overviewData);
       setStatusDistribution(statusData);
       setActivityTimeline(activityData);
-      setCategoryStats(categoryData);
       setTopCandidates(topData.top_candidates || []);
     } catch (error) {
       console.error('Ошибка загрузки метрик:', error);
@@ -157,20 +151,6 @@ const Metrics: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Слабых вопросов</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {overview?.weak_questions?.length || 0}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -195,30 +175,6 @@ const Metrics: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* Category Statistics */}
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Статистика по категориям</h2>
-          {categoryStats?.category_stats && (
-            <div className="space-y-4">
-              {categoryStats.category_stats.map((stat) => (
-                <div key={stat.category} className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    {stat.category}
-                  </span>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-500">
-                      {stat.count} вопросов
-                    </span>
-                    <span className="text-sm font-bold text-gray-900">
-                      {stat.avg_score}/10
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Top Candidates */}
@@ -238,6 +194,7 @@ const Metrics: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Количество вопросов
                   </th>
+                  <th className="px-6 py-3"></th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -265,6 +222,11 @@ const Metrics: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {candidate.questions_count}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button className="p-2 hover:bg-gray-200 rounded-full" title="Поделиться">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -274,21 +236,6 @@ const Metrics: React.FC = () => {
           <p className="text-gray-500">Нет данных о кандидатах</p>
         )}
       </div>
-
-      {/* Weak Questions */}
-      {overview?.weak_questions && overview.weak_questions.length > 0 && (
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Слабые вопросы</h2>
-          <div className="space-y-3">
-            {overview.weak_questions.map((question, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
-                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                <p className="text-sm text-gray-700">{question}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Activity Timeline */}
       {activityTimeline?.timeline && activityTimeline.timeline.length > 0 && (
