@@ -13,7 +13,6 @@ interface Metrics {
   total_candidates: number;
   active_candidates: number;
   test_pass_rate: number;
-  weak_questions: string[];
 }
 
 interface Candidate {
@@ -184,21 +183,6 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* Weak Questions */}
-      {metrics?.weak_questions && metrics.weak_questions.length > 0 && (
-        <div className="card">
-          <h2 className="text-subheaders text-background font-bold mb-4">Слабые вопросы</h2>
-          <div className="space-y-2">
-            {metrics.weak_questions.map((question, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
-                <div className="h-2 w-2 bg-error rounded-full"></div>
-                <p className="text-main text-background">{question}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

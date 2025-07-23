@@ -8,6 +8,7 @@ import {
   Settings,
   User
 } from 'lucide-react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,6 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // --- Проверка токена при загрузке ---
   useEffect(() => {
@@ -170,7 +172,83 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="container-fluid p-0 h-100">
+      {/* Bootstrap Navbar for mobile */}
+      <nav className="navbar navbar-expand-md navbar-light bg-light d-md-none">
+        <div className="container-fluid">
+          <button className="navbar-toggler" type="button" onClick={() => setSidebarOpen(true)}>
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <span className="navbar-brand">HR Admin</span>
+        </div>
+      </nav>
+      {/* Sidebar as offcanvas on mobile, static on desktop */}
+      <div className="row g-0 h-100 flex-nowrap">
+        {/* Offcanvas Sidebar for mobile */}
+        <div className={`offcanvas offcanvas-start d-md-none ${sidebarOpen ? 'show' : ''}`} tabIndex={-1} style={{visibility: sidebarOpen ? 'visible' : 'hidden'}}>
+          <div className="offcanvas-header">
+            <h5 className="offcanvas-title">Меню</h5>
+            <button type="button" className="btn-close text-reset" onClick={() => setSidebarOpen(false)}></button>
+          </div>
+          <div className="offcanvas-body p-0">
+            {renderSidebar(true)}
+          </div>
+        </div>
+        {/* Static Sidebar for md+ */}
+        <aside className="col-md-3 col-lg-2 d-none d-md-flex flex-column bg-light p-0 border-end" style={{minHeight: '100vh', height: '100vh', position: 'relative'}}>
+          <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+            <div style={{flex: 1, overflowY: 'auto'}}>
+              {renderSidebar(false, false)}
+            </div>
+          </div>
+          <div style={{
+            position: 'fixed',
+            left: 0,
+            bottom: 0,
+            width: '16.6667%', // col-md-3 is 25%, col-lg-2 is 16.6667%
+            minWidth: '200px', // fallback for sidebar min width
+            maxWidth: '320px', // fallback for sidebar max width
+            background: '#f8f9fa',
+            borderTop: '1px solid #dee2e6',
+            padding: '1rem',
+            zIndex: 1040
+          }}>
+            {renderSidebar(false, true)}
+          </div>
+        </aside>
+        {/* Main Content */}
+        <main className="col-12 col-md-9 col-lg-10 px-3 py-4" style={{minHeight: '100vh'}}>
+          {/* Top Bar */}
+          <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 gap-3">
+            <div>
+              <h2 className="h4 mb-1">{navigation.find(item => item.href === location.pathname)?.name || 'HR Admin Panel'}</h2>
+              <p className="text-muted mb-0">Управление HR процессами и кандидатами</p>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+              <button className="btn btn-outline-secondary position-relative" onClick={handleOpenNotifications}>
+                <Bell />
+                {notifications.some(n => !n.read) && (
+                  <span className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                )}
+              </button>
+              <div className="vr mx-2 d-none d-md-block"></div>
+              <div className="d-flex align-items-center gap-2">
+                <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
+                  <span className="text-white fw-bold">HR</span>
+                </div>
+                <div className="d-none d-md-block">
+                  <div className="fw-medium">{profileData.name}</div>
+                  <div className="text-muted small">{profileData.email}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Page Content */}
+          <div className="flex-grow-1 w-100">
+            {children}
+          </div>
+        </main>
+      </div>
       {/* Модальное окно логина */}
       {showLoginModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -230,99 +308,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       )}
-      {/* Sidebar */}
-      <div className="sidebar">
-        {/* Logo */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-main rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-subheaders text-background font-bold">HR Admin</h1>
-              <p className="text-add text-background-2">Панель управления</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Navigation */}
-        <nav className="mb-8">
-          <div className="space-y-2">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`nav-item ${isActive ? 'active' : ''}`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-        
-        {/* User Profile */}
-        <div className="mt-auto">
-          <div className="flex items-center gap-3 p-4 bg-background-2 rounded-lg">
-            <div className="w-10 h-10 bg-main rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-main">HR</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-nav text-background font-medium">{profileData.name}</p>
-              <p className="text-add text-background-2">{profileData.email}</p>
-            </div>
-            <button className="text-background-2 hover:text-background transition-colors" onClick={() => setShowProfileModal(true)}>
-              <Settings className="w-5 h-5" />
-            </button>
-            <button className="ml-2 text-background-2 hover:text-error transition-colors" onClick={handleLogout}>
-              Выйти
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="main-content">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-headers text-background">
-              {navigation.find(item => item.href === location.pathname)?.name || 'HR Admin Panel'}
-            </h2>
-            <p className="text-main text-background-2 mt-2">
-              Управление HR процессами и кандидатами
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button className="relative p-3 text-background-2 hover:text-background transition-colors" onClick={handleOpenNotifications}>
-              <Bell className="w-6 h-6" />
-              {notifications.some(n => !n.read) && (
-                <span className="absolute top-2 right-2 w-3 h-3 bg-error rounded-full"></span>
-              )}
-            </button>
-            <div className="w-px h-8 bg-background-2"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-main rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-add">HR</span>
-              </div>
-              <div className="hidden md:block">
-                <p className="text-nav text-background font-medium">{profileData.name}</p>
-                <p className="text-add text-background-2">{profileData.email}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Page Content */}
-        <div className="container">
-          {children}
-        </div>
-      </div>
-
       {/* Модальное окно профиля */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -402,6 +387,84 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
     </div>
   );
+
+// Helper to render sidebar content
+function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
+  if (onlyProfileSection) {
+    // Inline profile section since ProfileSection component is missing
+    return (
+      <div>
+        <div className="fw-bold">{profileData?.name || "Пользователь"}</div>
+        <div className="text-muted small mb-2">{profileData?.email || ""}</div>
+        <button
+          className="btn btn-link p-0 d-block"
+          onClick={() => setShowProfileModal(true)}
+        >
+          Профиль
+        </button>
+        <button
+          className="btn btn-link text-danger p-0 d-block mt-2"
+          onClick={handleLogout}
+        >
+          Выйти
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="d-flex flex-column h-100 p-3">
+      {/* Logo */}
+      <div className="mb-4 d-flex align-items-center gap-3">
+        <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 40, height: 40}}>
+          <User className="text-white" />
+        </div>
+        <div>
+          <h1 className="h5 mb-0">HR Admin</h1>
+          <small className="text-muted">Панель управления</small>
+        </div>
+      </div>
+      {/* Navigation */}
+      <ul className="nav flex-column mb-4">
+        {navigation.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <li className="nav-item" key={item.name}>
+              <Link
+                to={item.href}
+                className={`nav-link d-flex align-items-center gap-2 ${isActive ? 'active fw-bold text-primary' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <item.icon />
+                {item.name}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      {/* User Profile (for mobile/offcanvas sidebar) */}
+      {showProfileSection && (
+        <div className="border-top pt-3">
+          <div>
+            <div className="fw-bold">{profileData?.name || "Пользователь"}</div>
+            <div className="text-muted small mb-2">{profileData?.email || ""}</div>
+            <button
+              className="btn btn-link p-0 d-block"
+              onClick={() => setShowProfileModal(true)}
+            >
+              Профиль
+            </button>
+            <button
+              className="btn btn-link text-danger p-0 d-block mt-2"
+              onClick={handleLogout}
+            >
+              Выйти
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 };
 
 export default Layout; 

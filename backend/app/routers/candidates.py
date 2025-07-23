@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -205,3 +205,19 @@ async def perform_quick_action(
     db.commit()
     
     return {"message": f"Действие {action.action_type} выполнено"} 
+
+@router.post("/{candidate_id}/send-data")
+async def send_candidate_data(
+    candidate_id: int,
+    format: str = Body(..., embed=True),
+    db: Session = Depends(get_db)
+):
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate or not candidate.telegram_username:
+        raise HTTPException(status_code=404, detail="Кандидат не найден или нет Telegram")
+    telegram_service = TelegramService()
+    ok = await telegram_service.send_candidate_data_formatted(candidate, format)
+    if ok:
+        return {"message": "Данные отправлены кандидату в Telegram"}
+    else:
+        raise HTTPException(status_code=500, detail="Ошибка отправки данных в Telegram") 

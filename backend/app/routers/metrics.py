@@ -23,25 +23,12 @@ async def get_metrics_overview(db: Session = Depends(get_db)):
     passed_candidates = db.query(Candidate).filter(Candidate.status == "прошёл").count()
     test_pass_rate = (passed_candidates / total_candidates * 100) if total_candidates > 0 else 0
     
-    # Самые слабые вопросы (с наименьшим средним баллом)
-    weak_questions = db.query(
-        InterviewLog.question,
-        func.avg(InterviewLog.score).label('avg_score')
-    ).filter(
-        InterviewLog.score.isnot(None)
-    ).group_by(
-        InterviewLog.question
-    ).order_by(
-        func.avg(InterviewLog.score)
-    ).limit(3).all()
-    
-    weak_questions_list = [q.question for q in weak_questions]
+   
     
     return Metrics(
         total_candidates=total_candidates,
         active_candidates=active_candidates,
         test_pass_rate=round(test_pass_rate, 2),
-        weak_questions=weak_questions_list
     )
 
 @router.get("/status-distribution")

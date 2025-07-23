@@ -88,7 +88,6 @@ class Metrics(BaseModel):
     total_candidates: int
     active_candidates: int
     test_pass_rate: float
-    weak_questions: List[str]
 
 # Модели для фильтрации
 class CandidateFilter(BaseModel):
