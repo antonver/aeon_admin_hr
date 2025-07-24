@@ -27,8 +27,8 @@ class Candidate(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, nullable=False)
     telegram_username = Column(String, nullable=True)
-    email = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
+    telegram_id = Column(String, nullable=True)
+    results = Column(String, nullable=True)
     status = Column(String, default="ожидает")  # ожидает, прошёл, приглашён, отклонён
     last_action_date = Column(DateTime, default=datetime.utcnow)
     last_action_type = Column(String, nullable=True)

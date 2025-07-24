@@ -6,23 +6,26 @@ from datetime import datetime
 class CandidateBase(BaseModel):
     full_name: str
     telegram_username: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    
 
 class CandidateCreate(CandidateBase):
-    pass
+    telegram_id: str
+    results: str
+    
 
 class CandidateUpdate(BaseModel):
     full_name: Optional[str] = None
     telegram_username: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    telegram_id: Optional[str] = None
+    results: Optional[str] = None
     status: Optional[str] = None
     last_action_type: Optional[str] = None
 
 class Candidate(CandidateBase):
     id: int
     status: str
+    telegram_id: str
+    results: str
     last_action_date: datetime
     last_action_type: Optional[str] = None
     notion_id: Optional[str] = None

@@ -195,8 +195,8 @@ async def perform_quick_action(
         return {
             "full_name": candidate.full_name,
             "telegram": candidate.telegram_username,
-            "email": candidate.email,
-            "phone": candidate.phone
+            # "email": candidate.email,
+            # "phone": candidate.phone
         }
     
     # Обновить последнее действие
@@ -220,4 +220,4 @@ async def send_candidate_data(
     if ok:
         return {"message": "Данные отправлены кандидату в Telegram"}
     else:
-        raise HTTPException(status_code=500, detail="Ошибка отправки данных в Telegram") 
+        raise HTTPException(status_code=500, detail=f"Ошибка отправки данных в Telegram /{format}/") 

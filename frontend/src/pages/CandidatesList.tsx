@@ -316,13 +316,7 @@ const CandidatesList: React.FC = () => {
             Управление кандидатами и их статусами
           </p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Добавить кандидата</span>
-        </button>
+        {/* Removed the 'Добавить кандидата' button here */}
       </div>
 
       {/* Filters */}
