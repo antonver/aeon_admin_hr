@@ -1,4 +1,5 @@
 import os
+import json
 import asyncio
 from telegram import Bot
 from telegram.error import TelegramError
@@ -15,11 +16,11 @@ class TelegramService:
     
     async def send_message(self, candidate: Candidate, message: str):
         """Отправить сообщение кандидату в Telegram"""
-        if not self.bot or not candidate.telegram_username:
+        if not self.bot or not candidate.telegram_id:
             return False
         
         try:
-            chat_id = f"@{candidate.telegram_username}"
+            chat_id = f"{candidate.telegram_id}"
             await self.bot.send_message(
                 chat_id=chat_id,
                 text=message,
@@ -121,15 +122,15 @@ class TelegramService:
     
     async def send_candidate_data_formatted(self, candidate: Candidate, format: str):
         """Отправить все данные кандидата в Telegram в выбранном формате (csv, md, json)"""
-        if not self.bot or not candidate.telegram_username:
+        if not self.bot or not candidate.telegram_id:
             return False
         # Формируем данные
         data = {
             'ID': candidate.id,
             'ФИО': candidate.full_name,
             'Telegram': candidate.telegram_username or '',
-            'Email': candidate.email or '',
-            'Телефон': candidate.phone or '',
+            # 'Email': candidate.email or '',
+            # 'Телефон': candidate.phone or '',
             'Статус': candidate.status,
             'Последнее действие': candidate.last_action_type or '',
             'Дата создания': candidate.created_at.strftime('%Y-%m-%d %H:%M') if candidate.created_at else '',
@@ -140,12 +141,12 @@ class TelegramService:
         elif format == 'md':
             text = '### Данные кандидата\n' + '\n'.join([f'- **{k}:** {v}' for k, v in data.items()])
         elif format == 'json':
-            import json
+            
             text = json.dumps(data, ensure_ascii=False, indent=2)
         else:
             text = 'Неверный формат данных.'
         try:
-            chat_id = f"@{candidate.telegram_username}"
+            chat_id = f"{candidate.telegram_id}"
             await self.bot.send_message(
                 chat_id=chat_id,
                 text=text,

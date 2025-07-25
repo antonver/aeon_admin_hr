@@ -69,13 +69,6 @@ const Dashboard: React.FC = () => {
           <h1 className="text-headers text-background mb-2">Дашборд</h1>
           <p className="text-main text-background-2">Обзор HR-процессов и кандидатов</p>
         </div>
-        <Link
-          to="/candidates"
-          className="btn btn-primary"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Добавить кандидата</span>
-        </Link>
       </div>
 
       {/* Metrics Cards */}

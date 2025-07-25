@@ -40,12 +40,12 @@ class NotionService:
                 "Telegram": {
                     "url": f"https://t.me/{candidate.telegram_username}" if candidate.telegram_username else None
                 },
-                "Email": {
-                    "email": candidate.email
-                },
-                "Телефон": {
-                    "phone_number": candidate.phone
-                },
+                # "Email": {
+                #     "email": candidate.email
+                # },
+                # "Телефон": {
+                #     "phone_number": candidate.phone
+                # },
                 "Статус": {
                     "select": {
                         "name": status_map.get(candidate.status, "Ожидает")
