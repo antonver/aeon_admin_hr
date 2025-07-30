@@ -55,6 +55,10 @@ async def root():
 async def manifest():
     return FileResponse("static/manifest.json")
 
+@app.get("/test-telegram")
+async def test_telegram():
+    return FileResponse("static/test-telegram.html")
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
