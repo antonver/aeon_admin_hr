@@ -21,8 +21,15 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 def validate_telegram_init_data(init_data: str) -> dict:
     """Валидация init_data от Telegram Mini Apps"""
     try:
+        # Логируем входящие данные для отладки
+        logging.info(f"Received init_data: {init_data}")
+        
+        if not init_data or init_data.strip() == "":
+            raise HTTPException(status_code=400, detail="Пустые данные init_data")
+        
         # Разбираем init_data
         parsed_data = urllib.parse.parse_qs(init_data)
+        logging.info(f"Parsed data: {parsed_data}")
         
         # Извлекаем hash
         data_hash = parsed_data.get('hash', [None])[0]
@@ -47,6 +54,7 @@ def validate_telegram_init_data(init_data: str) -> dict:
             ).hexdigest()
             
             if calculated_hash != data_hash:
+                logging.error(f"Hash mismatch: expected {data_hash}, got {calculated_hash}")
                 raise HTTPException(status_code=400, detail="Неверная подпись init_data")
         
         # Извлекаем данные пользователя
@@ -65,9 +73,11 @@ def validate_telegram_init_data(init_data: str) -> dict:
                 logging.error(f"Ошибка парсинга JSON из user: {user_data['user']}")
         
         # Отладочная информация
-        logging.info(f"Parsed user_data: {user_data}")
+        logging.info(f"Final user_data: {user_data}")
         
         return user_data
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Ошибка валидации init_data: {e}")
         raise HTTPException(status_code=400, detail="Неверный формат init_data")
@@ -98,6 +108,8 @@ async def telegram_auth(
 ):
     """Аутентификация через Telegram Mini Apps"""
     try:
+        logging.info(f"Received auth request with init_data length: {len(auth_request.init_data) if auth_request.init_data else 0}")
+        
         # Валидируем init_data
         user_data = validate_telegram_init_data(auth_request.init_data)
         
@@ -106,6 +118,8 @@ async def telegram_auth(
         first_name = user_data.get('first_name', '')
         last_name = user_data.get('last_name', '')
         username = user_data.get('username')
+        
+        logging.info(f"Extracted user data: id={telegram_id}, name={first_name} {last_name}, username={username}")
         
         if not telegram_id:
             raise HTTPException(status_code=400, detail="ID пользователя не найден в init_data")

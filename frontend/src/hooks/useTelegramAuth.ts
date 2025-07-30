@@ -30,6 +30,8 @@ export const useTelegramAuth = () => {
       // Получаем init_data от Telegram
       const initDataRaw = retrieveRawInitData();
       
+      console.log('Retrieved init_data:', initDataRaw);
+      
       if (!initDataRaw) {
         throw new Error('Не удалось получить данные от Telegram');
       }
@@ -47,10 +49,12 @@ export const useTelegramAuth = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Auth error response:', errorData);
         throw new Error(errorData.detail || 'Ошибка аутентификации');
       }
 
       const data: AuthResponse = await response.json();
+      console.log('Auth success:', data);
       
       // Сохраняем токен и данные пользователя
       setToken(data.access_token);
@@ -61,6 +65,7 @@ export const useTelegramAuth = () => {
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      console.error('Authentication error:', err);
       setError(errorMessage);
       throw err;
     } finally {
