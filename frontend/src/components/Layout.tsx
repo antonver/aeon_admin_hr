@@ -4,10 +4,10 @@ import {
   Users, 
   BarChart3, 
   Home, 
-  Bell,
-  Settings,
-  User
+  User,
+  Shield
 } from 'lucide-react';
+import { useTelegramAuth } from '../hooks/useTelegramAuth';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface LayoutProps {
@@ -16,12 +16,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
-
-  // --- СТЕЙТ ДЛЯ ЛОГИНА ---
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const { user, token, loading, authenticate, logout } = useTelegramAuth();
 
   // --- СТЕЙТ ДЛЯ МОДАЛКИ НАСТРОЕК ---
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -34,75 +29,41 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // --- СТЕЙТ ДЛЯ УВЕДОМЛЕНИЙ ---
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // --- Проверка токена при загрузке ---
-  useEffect(() => {
-    const savedToken = localStorage.getItem('access_token');
-    if (savedToken) {
-      setToken(savedToken);
-      fetchProfile(savedToken);
-    } else {
-      setShowLoginModal(true);
-    }
-  }, []);
-
   // --- Получить профиль пользователя ---
-  const fetchProfile = async (jwtToken: string) => {
+  const fetchProfile = async () => {
+    if (!user) return;
+    
     try {
-      const res = await fetch('/api/user/profile', {
-        headers: { Authorization: `Bearer ${jwtToken}` },
+      const res = await fetch('/api/telegram/profile', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setProfileData({
           name: data.name,
-          email: data.email,
+          email: data.email || '',
           currentPassword: '',
           newPassword: '',
         });
-      } else {
-        setShowLoginModal(true);
       }
-    } catch {
-      setShowLoginModal(true);
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
     }
   };
 
-  // --- Логин ---
-  const handleLogin = async () => {
-    setLoginError(null);
-    try {
-      const res = await fetch('/api/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginData),
+  // Обновляем профиль при изменении пользователя
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name,
+        email: user.email || '',
+        currentPassword: '',
+        newPassword: '',
       });
-      if (res.ok) {
-        const data = await res.json();
-        setToken(data.access_token);
-        localStorage.setItem('access_token', data.access_token);
-        setShowLoginModal(false);
-        fetchProfile(data.access_token);
-      } else {
-        setLoginError('Неверный email или пароль');
-      }
-    } catch {
-      setLoginError('Ошибка авторизации');
     }
-  };
-
-  // --- Выход ---
-  const handleLogout = () => {
-    setToken(null);
-    localStorage.removeItem('access_token');
-    setShowLoginModal(true);
-    setProfileData({ name: '', email: '', currentPassword: '', newPassword: '' });
-  };
+  }, [user]);
 
   // --- Сохранение профиля ---
   const handleProfileChange = (field: string, value: string) => {
@@ -129,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         setProfileMessage('Профиль успешно обновлён');
         setTimeout(() => setProfileMessage(null), 3000);
         setShowProfileModal(false);
-        fetchProfile(token!);
+        fetchProfile();
       } else {
         setProfileMessage('Ошибка обновления профиля');
         setTimeout(() => setProfileMessage(null), 3000);
@@ -142,34 +103,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  // Загрузка уведомлений
-  const fetchNotifications = async () => {
-    if (!token) return;
-    setNotificationsLoading(true);
-    try {
-      const res = await fetch('/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      }
-    } finally {
-      setNotificationsLoading(false);
-    }
-  };
 
-  // Открытие окна уведомлений
-  const handleOpenNotifications = () => {
-    setShowNotifications(true);
-    fetchNotifications();
-  };
 
   const navigation = [
     { name: 'Дашборд', href: '/', icon: Home },
     { name: 'Кандидаты', href: '/candidates', icon: Users },
     { name: 'Метрики', href: '/metrics', icon: BarChart3 },
   ];
+
+  // Добавляем пункт управления админами только для админов
+  if (user?.is_admin) {
+    navigation.push({ name: 'Администраторы', href: '/admins', icon: Shield });
+  }
 
   return (
     <div className="container-fluid p-0 h-100">
@@ -225,89 +170,48 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <p className="text-muted mb-0">Управление HR процессами и кандидатами</p>
             </div>
             <div className="d-flex align-items-center gap-3">
-              <button className="btn btn-outline-secondary position-relative" onClick={handleOpenNotifications}>
-                <Bell />
-                {notifications.some(n => !n.read) && (
-                  <span className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-                )}
-              </button>
               <div className="vr mx-2 d-none d-md-block"></div>
-              <div className="d-flex align-items-center gap-2">
-                <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
-                  <span className="text-white fw-bold">HR</span>
+                              <div className="d-flex align-items-center gap-2">
+                  <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
+                    <span className="text-white fw-bold">HR</span>
+                  </div>
+                  <div className="d-none d-md-block">
+                    <div className="fw-medium">{user?.name || profileData.name}</div>
+                    <div className="text-muted small">
+                      {user?.telegram_username ? `@${user.telegram_username}` : profileData.email}
+                      {user?.is_admin && (
+                        <span className="badge bg-success ms-2">Админ</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="d-none d-md-block">
-                  <div className="fw-medium">{profileData.name}</div>
-                  <div className="text-muted small">{profileData.email}</div>
-                </div>
-              </div>
             </div>
           </div>
           {/* Page Content */}
           <div className="flex-grow-1 w-100">
-            {children}
+            {loading ? (
+              <div className="d-flex justify-content-center align-items-center" style={{minHeight: '400px'}}>
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Загрузка...</span>
+                </div>
+              </div>
+            ) : !user ? (
+              <div className="d-flex justify-content-center align-items-center" style={{minHeight: '400px'}}>
+                <div className="text-center">
+                  <h3>Требуется авторизация</h3>
+                  <p className="text-muted">Для доступа к панели необходимо авторизоваться через Telegram</p>
+                  <button className="btn btn-primary" onClick={authenticate}>
+                    Авторизоваться
+                  </button>
+                </div>
+              </div>
+            ) : (
+              children
+            )}
           </div>
         </main>
       </div>
-      {/* Модальное окно логина */}
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-subheaders text-background font-bold mb-4">Вход</h2>
-            <div className="space-y-4">
-              <input
-                type="email"
-                className="input-field"
-                placeholder="Email"
-                value={loginData.email}
-                onChange={e => setLoginData({ ...loginData, email: e.target.value })}
-              />
-              <input
-                type="password"
-                className="input-field"
-                placeholder="Пароль"
-                value={loginData.password}
-                onChange={e => setLoginData({ ...loginData, password: e.target.value })}
-              />
-              {loginError && <div className="text-error text-center">{loginError}</div>}
-              <button className="btn btn-primary w-full" onClick={handleLogin}>
-                Войти
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Модальное окно уведомлений */}
-      {showNotifications && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Уведомления</h2>
-              <button
-                onClick={() => setShowNotifications(false)}
-                className="text-background-2 hover:text-background"
-              >
-                <span style={{fontSize: 24, fontWeight: 700}}>×</span>
-              </button>
-            </div>
-            {notificationsLoading ? (
-              <div className="text-center text-main">Загрузка...</div>
-            ) : notifications.length === 0 ? (
-              <div className="text-center text-main">Нет уведомлений</div>
-            ) : (
-              <div className="space-y-4">
-                {notifications.map((n) => (
-                  <div key={n.id} className="p-4 rounded-lg bg-background-2">
-                    <div className="text-main font-medium mb-1">{n.type}</div>
-                    <div className="text-add mb-2">{n.message}</div>
-                    <div className="text-time text-background-2">{new Date(n.created_at).toLocaleString()}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
       {/* Модальное окно профиля */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -404,7 +308,7 @@ function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
         </button>
         <button
           className="btn btn-link text-danger p-0 d-block mt-2"
-          onClick={handleLogout}
+          onClick={logout}
         >
           Выйти
         </button>
@@ -455,7 +359,7 @@ function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
             </button>
             <button
               className="btn btn-link text-danger p-0 d-block mt-2"
-              onClick={handleLogout}
+              onClick={logout}
             >
               Выйти
             </button>

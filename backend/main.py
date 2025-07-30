@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 
 from app.database import engine, Base
-from app.routers import candidates, notifications, metrics, user
+from app.routers import candidates, notifications, metrics, user, telegram_auth
 from app.services.telegram_service import TelegramService
 from app.services.notion_service import NotionService
 
@@ -41,6 +41,7 @@ app.include_router(candidates.router, prefix="/api/candidates", tags=["candidate
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(metrics.router, prefix="/api/metrics", tags=["metrics"])
 app.include_router(user.router, prefix="/api/user", tags=["user"])
+app.include_router(telegram_auth.router, prefix="/api/telegram", tags=["telegram"])
 
 @app.get("/")
 async def root():
@@ -49,6 +50,14 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.get("/api/health")
+async def api_health_check():
+    return {"status": "healthy"}
+
+@app.get("/api/")
+async def api_root():
+    return {"message": "HR Admin Panel API", "version": "1.0.0"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 

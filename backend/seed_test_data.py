@@ -22,71 +22,110 @@ def create_test_candidates():
         {
             "full_name": "Иванов Иван Иванович",
             "telegram_username": "@ivan_dev",
-            "email": "ivan.ivanov@example.com",
-            "phone": "+7 (999) 123-45-67",
+            "telegram_id": "123456789",
+            "results": "Хорошие результаты",
             "status": "ожидает"
         },
         {
             "full_name": "Петрова Анна Сергеевна",
             "telegram_username": "@anna_hr",
-            "email": "anna.petrova@example.com",
-            "phone": "+7 (999) 234-56-78",
+            "telegram_id": "234567890",
+            "results": "Отличные результаты",
             "status": "приглашён"
         },
         {
             "full_name": "Сидоров Алексей Петрович",
             "telegram_username": "@alex_developer",
-            "email": "alex.sidorov@example.com",
-            "phone": "+7 (999) 345-67-89",
+            "telegram_id": "345678901",
+            "results": "Превосходные результаты",
             "status": "прошёл"
         },
         {
             "full_name": "Козлова Мария Дмитриевна",
             "telegram_username": "@maria_design",
-            "email": "maria.kozlova@example.com",
-            "phone": "+7 (999) 456-78-90",
+            "telegram_id": "456789012",
+            "results": "Средние результаты",
             "status": "отклонён"
         },
         {
             "full_name": "Волков Дмитрий Александрович",
             "telegram_username": "@dmitry_qa",
-            "email": "dmitry.volkov@example.com",
-            "phone": "+7 (999) 567-89-01",
+            "telegram_id": "567890123",
+            "results": "Хорошие результаты",
             "status": "ожидает"
         },
         {
             "full_name": "Смирнова Елена Владимировна",
             "telegram_username": "@elena_manager",
-            "email": "elena.smirnova@example.com",
-            "phone": "+7 (999) 678-90-12",
+            "telegram_id": "678901234",
+            "results": "Отличные результаты",
             "status": "приглашён"
         },
         {
             "full_name": "Новиков Артём Игоревич",
             "telegram_username": "@artem_frontend",
-            "email": "artem.novikov@example.com",
-            "phone": "+7 (999) 789-01-23",
+            "telegram_id": "789012345",
+            "results": "Превосходные результаты",
             "status": "прошёл"
         },
         {
             "full_name": "Морозова Кристина Андреевна",
             "telegram_username": "@kristina_analyst",
-            "email": "kristina.morozova@example.com",
-            "phone": "+7 (999) 890-12-34",
+            "telegram_id": "890123456",
+            "results": "Хорошие результаты",
             "status": "ожидает"
         },
         {
             "full_name": "Лебедев Сергей Николаевич",
             "telegram_username": "@sergey_backend",
-            "email": "sergey.lebedev@example.com",
-            "phone": "+7 (999) 901-23-45",
+            "telegram_id": "901234567",
+            "results": "Отличные результаты",
             "status": "приглашён"
         },
         {
             "full_name": "Соколова Анастасия Павловна",
             "telegram_username": "@nastya_marketing",
-            "email": "anastasia.sokolova@example.com",
-            "phone": "+7 (999) 012-34-56",
+            "telegram_id": "012345678",
+            "results": "Превосходные результаты",
+            "status": "прошёл"
+        }
+    ]
+    
+    # Дополнительные кандидаты для разных месяцев
+    additional_candidates = [
+        {
+            "full_name": "Кузнецов Андрей Петрович",
+            "telegram_username": "@andrey_dev",
+            "telegram_id": "111111111",
+            "results": "Хорошие результаты",
+            "status": "прошёл"
+        },
+        {
+            "full_name": "Иванова Ольга Сергеевна",
+            "telegram_username": "@olga_hr",
+            "telegram_id": "222222222",
+            "results": "Отличные результаты",
+            "status": "приглашён"
+        },
+        {
+            "full_name": "Петров Михаил Александрович",
+            "telegram_username": "@mikhail_qa",
+            "telegram_id": "333333333",
+            "results": "Средние результаты",
+            "status": "отклонён"
+        },
+        {
+            "full_name": "Сидорова Екатерина Дмитриевна",
+            "telegram_username": "@ekaterina_design",
+            "telegram_id": "444444444",
+            "results": "Хорошие результаты",
+            "status": "ожидает"
+        },
+        {
+            "full_name": "Козлов Денис Игоревич",
+            "telegram_username": "@denis_backend",
+            "telegram_id": "555555555",
+            "results": "Превосходные результаты",
             "status": "прошёл"
         }
     ]
@@ -131,11 +170,11 @@ def create_test_candidates():
     created_candidates = []
     
     try:
-        # Создаем кандидатов
+        # Создаем кандидатов для июля 2025
         for i, candidate_data in enumerate(test_candidates):
-            # Добавляем случайную дату создания (последние 30 дней)
+            # Добавляем случайную дату создания (последние 30 дней июля)
             days_ago = random.randint(0, 30)
-            created_at = datetime.utcnow() - timedelta(days=days_ago)
+            created_at = datetime(2025, 7, 1) + timedelta(days=days_ago)
             
             candidate = Candidate(
                 **candidate_data,
@@ -149,7 +188,7 @@ def create_test_candidates():
             db.refresh(candidate)
             created_candidates.append(candidate)
             
-            print(f"✅ Создан кандидат: {candidate.full_name} (ID: {candidate.id})")
+            print(f"✅ Создан кандидат (июль): {candidate.full_name} (ID: {candidate.id})")
             
             # Добавляем логи интервью для некоторых кандидатов
             if candidate.status in ["прошёл", "приглашён"]:
@@ -163,6 +202,84 @@ def create_test_candidates():
                         db.add(interview_log)
                 
                 # Добавляем комментарий HR
+                comment = Comment(
+                    candidate_id=candidate.id,
+                    hr_comment=random.choice(hr_comments),
+                    created_at=created_at + timedelta(hours=2)
+                )
+                db.add(comment)
+            
+            db.commit()
+        
+        # Создаем кандидатов для июня 2025
+        for i, candidate_data in enumerate(additional_candidates[:3]):
+            days_ago = random.randint(0, 30)
+            created_at = datetime(2025, 6, 1) + timedelta(days=days_ago)
+            
+            candidate = Candidate(
+                **candidate_data,
+                created_at=created_at,
+                updated_at=created_at,
+                last_action_date=created_at
+            )
+            
+            db.add(candidate)
+            db.commit()
+            db.refresh(candidate)
+            created_candidates.append(candidate)
+            
+            print(f"✅ Создан кандидат (июнь): {candidate.full_name} (ID: {candidate.id})")
+            
+            # Добавляем логи интервью
+            if candidate.status in ["прошёл", "приглашён"]:
+                for j, question_data in enumerate(interview_questions):
+                    if random.random() > 0.3:
+                        interview_log = InterviewLog(
+                            candidate_id=candidate.id,
+                            **question_data,
+                            created_at=created_at + timedelta(hours=j+1)
+                        )
+                        db.add(interview_log)
+                
+                comment = Comment(
+                    candidate_id=candidate.id,
+                    hr_comment=random.choice(hr_comments),
+                    created_at=created_at + timedelta(hours=2)
+                )
+                db.add(comment)
+            
+            db.commit()
+        
+        # Создаем кандидатов для мая 2025
+        for i, candidate_data in enumerate(additional_candidates[3:]):
+            days_ago = random.randint(0, 30)
+            created_at = datetime(2025, 5, 1) + timedelta(days=days_ago)
+            
+            candidate = Candidate(
+                **candidate_data,
+                created_at=created_at,
+                updated_at=created_at,
+                last_action_date=created_at
+            )
+            
+            db.add(candidate)
+            db.commit()
+            db.refresh(candidate)
+            created_candidates.append(candidate)
+            
+            print(f"✅ Создан кандидат (май): {candidate.full_name} (ID: {candidate.id})")
+            
+            # Добавляем логи интервью
+            if candidate.status in ["прошёл", "приглашён"]:
+                for j, question_data in enumerate(interview_questions):
+                    if random.random() > 0.3:
+                        interview_log = InterviewLog(
+                            candidate_id=candidate.id,
+                            **question_data,
+                            created_at=created_at + timedelta(hours=j+1)
+                        )
+                        db.add(interview_log)
+                
                 comment = Comment(
                     candidate_id=candidate.id,
                     hr_comment=random.choice(hr_comments),
@@ -208,6 +325,6 @@ def create_admin_user():
 
 if __name__ == "__main__":
     print("🚀 Создание тестовых кандидатов...")
-    # create_test_candidates()
+    create_test_candidates()
     create_admin_user()
     print("\n✨ Готово! Теперь можно тестировать приложение.") 

@@ -1,15 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
   TrendingUp, 
   Users, 
   UserCheck,
-  AlertTriangle
+  UserX,
+  Calendar,
+  ChevronDown
 } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Line, Pie } from 'react-chartjs-2';
 
-interface Metrics {
+// Регистрируем компоненты Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+interface MetricsData {
   total_candidates: number;
-  active_candidates: number;
+  passed_candidates: number;
   test_pass_rate: number;
 }
 
@@ -27,54 +52,106 @@ interface ActivityTimeline {
   }>;
 }
 
-interface CategoryStats {
-  category_stats: Array<{
-    category: string;
-    avg_score: number;
-    count: number;
-  }>;
-}
-
-interface TopCandidate {
-  full_name: string;
-  avg_score: number;
-  questions_count: number;
-}
+type TimeScope = 'month' | 'year';
 
 const Metrics: React.FC = () => {
-  const [overview, setOverview] = useState<Metrics | null>(null);
+  const [overview, setOverview] = useState<MetricsData | null>(null);
   const [statusDistribution, setStatusDistribution] = useState<StatusDistribution | null>(null);
   const [activityTimeline, setActivityTimeline] = useState<ActivityTimeline | null>(null);
-  const [topCandidates, setTopCandidates] = useState<TopCandidate[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Состояние для управления периодом
+  const [timeScope, setTimeScope] = useState<TimeScope>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [showPeriodSelector, setShowPeriodSelector] = useState(false);
 
+  // Обработчик клика вне селектора периода
   useEffect(() => {
-    fetchMetrics();
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.period-selector')) {
+        setShowPeriodSelector(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
-  const fetchMetrics = async () => {
+  // Генерируем список периодов для селектора
+  const generatePeriodOptions = () => {
+    const periods = [];
+    const currentDate = new Date();
+    
+    if (timeScope === 'month') {
+      // Генерируем месяцы за последние 12 месяцев
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const value = date.toISOString().slice(0, 7); // YYYY-MM
+        const label = date.toLocaleDateString('ru-RU', { 
+          year: 'numeric', 
+          month: 'long' 
+        });
+        periods.push({ value, label });
+      }
+    } else {
+      // Генерируем годы за последние 5 лет
+      for (let i = 0; i < 5; i++) {
+        const year = currentDate.getFullYear() - i;
+        const value = year.toString();
+        const label = year.toString();
+        periods.push({ value, label });
+      }
+    }
+    
+    return periods;
+  };
+
+  const periodOptions = generatePeriodOptions();
+
+  // Получаем текущий период по умолчанию
+  useEffect(() => {
+    if (periodOptions.length > 0 && !selectedPeriod) {
+      setSelectedPeriod(periodOptions[0].value);
+    }
+  }, [periodOptions, selectedPeriod]);
+
+  // Функция для загрузки данных с учетом периода
+  const fetchMetrics = async (period?: string, scope?: TimeScope) => {
+    const currentPeriod = period || selectedPeriod;
+    const currentScope = scope || timeScope;
+    
     try {
+      setLoading(true);
+      
+      // Формируем параметры для API
+      const params = new URLSearchParams();
+      if (currentPeriod) {
+        params.append('period', currentPeriod);
+        params.append('scope', currentScope);
+      }
+
+
+
       const [
         overviewRes,
         statusRes,
-        activityRes,
-        topRes
+        activityRes
       ] = await Promise.all([
-        fetch('/api/metrics/overview'),
-        fetch('/api/metrics/status-distribution'),
-        fetch('/api/metrics/activity-timeline'),
-        fetch('/api/metrics/top-candidates')
+        fetch(`/api/metrics/overview?${params}`),
+        fetch(`/api/metrics/status-distribution?${params}`),
+        fetch(`/api/metrics/activity-timeline?${params}`)
       ]);
 
       const overviewData = await overviewRes.json();
       const statusData = await statusRes.json();
       const activityData = await activityRes.json();
-      const topData = await topRes.json();
 
       setOverview(overviewData);
       setStatusDistribution(statusData);
       setActivityTimeline(activityData);
-      setTopCandidates(topData.top_candidates || []);
     } catch (error) {
       console.error('Ошибка загрузки метрик:', error);
     } finally {
@@ -82,15 +159,144 @@ const Metrics: React.FC = () => {
     }
   };
 
+  // Загружаем данные при изменении периода
+  useEffect(() => {
+    if (selectedPeriod) {
+      fetchMetrics(selectedPeriod, timeScope);
+    } else {
+      // Если период не выбран, загружаем все данные
+      fetchMetrics();
+    }
+  }, [selectedPeriod, timeScope]);
+
+  // Загружаем данные при монтировании компонента
+  useEffect(() => {
+    fetchMetrics();
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ожидает': return 'bg-yellow-500';
-      case 'прошёл': return 'bg-green-500';
-      case 'приглашён': return 'bg-blue-500';
-      case 'отклонён': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'ожидает': return '#fbbf24'; // yellow-400
+      case 'прошёл': return '#10b981'; // green-500
+      case 'приглашён': return '#3b82f6'; // blue-500
+      case 'отклонён': return '#ef4444'; // red-500
+      default: return '#6b7280'; // gray-500
     }
   };
+
+  // Функция для фильтрации данных по выбранному периоду
+  const getFilteredTimelineData = () => {
+    if (!activityTimeline?.timeline) return null;
+
+    let startDate: Date;
+    let endDate: Date;
+
+    if (timeScope === 'month') {
+      const selectedDate = new Date(selectedPeriod + '-01');
+      startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+    } else {
+      const selectedYear = parseInt(selectedPeriod);
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31);
+    }
+
+    return activityTimeline.timeline.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  };
+
+  // Подготовка данных для круговой диаграммы
+  const pieChartData = statusDistribution?.distribution ? {
+    labels: statusDistribution.distribution.map(item => item.status),
+    datasets: [
+      {
+        data: statusDistribution.distribution.map(item => item.count),
+        backgroundColor: statusDistribution.distribution.map(item => getStatusColor(item.status)),
+        borderColor: statusDistribution.distribution.map(item => getStatusColor(item.status)),
+        borderWidth: 2,
+      },
+    ],
+  } : null;
+
+  // Подготовка данных для линейной диаграммы
+  const filteredData = getFilteredTimelineData();
+  const lineChartData = filteredData ? {
+    labels: filteredData.map(item => {
+      const date = new Date(item.date);
+      if (timeScope === 'month') {
+        return date.toLocaleDateString('ru-RU', { day: 'numeric' });
+      } else {
+        return date.toLocaleDateString('ru-RU', { month: 'short' });
+      }
+    }),
+    datasets: [
+      {
+        label: 'Кандидаты',
+        data: filteredData.map(item => item.count),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  } : null;
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = ((context.parsed / total) * 100).toFixed(1);
+            return `${context.label}: ${context.parsed} (${percentage}%)`;
+          },
+        },
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+    interaction: {
+      mode: 'nearest' as const,
+      axis: 'x' as const,
+      intersect: false,
+    },
+  };
+
+
 
   if (loading) {
     return (
@@ -102,10 +308,64 @@ const Metrics: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Метрики и аналитика</h1>
-        <p className="text-gray-600">Анализ HR-процессов и эффективности</p>
+
+      {/* Period Selector */}
+      <div className="card">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Выбор периода</h2>
+          
+          <div className="flex items-center space-x-3">
+            {/* Селектор типа периода */}
+            <div className="relative">
+              <select
+                value={timeScope}
+                onChange={(e) => {
+                  setTimeScope(e.target.value as TimeScope);
+                  setSelectedPeriod(''); // Сбрасываем выбранный период при смене типа
+                }}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="month">Месяц</option>
+                <option value="year">Год</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Селектор конкретного периода */}
+            <div className="relative period-selector">
+              <button
+                onClick={() => setShowPeriodSelector(!showPeriodSelector)}
+                className="flex items-center space-x-2 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <Calendar className="h-4 w-4 text-gray-500" />
+                <span>
+                  {periodOptions.find(opt => opt.value === selectedPeriod)?.label || 'Выберите период'}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+
+              {/* Выпадающий список периодов */}
+              {showPeriodSelector && (
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  {periodOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setSelectedPeriod(option.value);
+                        setShowPeriodSelector(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 ${
+                        selectedPeriod === option.value ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Overview Cards */}
@@ -113,11 +373,11 @@ const Metrics: React.FC = () => {
         <div className="card">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Users className="h-8 w-8 text-primary-600" />
+              <Users className="h-8 w-8 text-main" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Всего кандидатов</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-add text-background-2">Всего кандидатов</p>
+              <p className="text-subheaders text-background font-bold">
                 {overview?.total_candidates || 0}
               </p>
             </div>
@@ -127,12 +387,12 @@ const Metrics: React.FC = () => {
         <div className="card">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <UserCheck className="h-8 w-8 text-green-600" />
+              <UserCheck className="h-8 w-8 text-accept" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Активные кандидаты</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {overview?.active_candidates || 0}
+              <p className="text-add text-background-2">Прошедшие кандидаты</p>
+              <p className="text-subheaders text-background font-bold">
+                {overview?.passed_candidates || 0}
               </p>
             </div>
           </div>
@@ -141,12 +401,26 @@ const Metrics: React.FC = () => {
         <div className="card">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TrendingUp className="h-8 w-8 text-blue-600" />
+              <TrendingUp className="h-8 w-8 text-accent" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Процент прохождения</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-add text-background-2">Процент прохождения</p>
+              <p className="text-subheaders text-background font-bold">
                 {overview?.test_pass_rate || 0}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <UserX className="h-8 w-8 text-error" />
+            </div>
+            <div className="ml-4">
+              <p className="text-add text-background-2">Отклонённые</p>
+              <p className="text-subheaders text-background font-bold">
+                {(overview?.total_candidates || 0) - (overview?.passed_candidates || 0)}
               </p>
             </div>
           </div>
@@ -154,110 +428,34 @@ const Metrics: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
+        {/* Status Distribution - Pie Chart */}
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Распределение по статусам</h2>
-          {statusDistribution?.distribution && (
-            <div className="space-y-4">
-              {statusDistribution.distribution.map((item) => (
-                <div key={item.status} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`h-3 w-3 rounded-full ${getStatusColor(item.status)}`}></div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {item.status}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900">
-                    {item.count}
-                  </span>
-                </div>
-              ))}
+          {pieChartData ? (
+            <div className="h-80">
+              <Pie data={pieChartData} options={pieChartOptions} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-80">
+              <p className="text-gray-500">Нет данных для отображения</p>
+            </div>
+          )}
+        </div>
+
+        {/* Activity Timeline - Line Chart */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Активность по дням</h2>
+          {lineChartData ? (
+            <div className="h-80">
+              <Line data={lineChartData} options={lineChartOptions} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-80">
+              <p className="text-gray-500">Нет данных для отображения</p>
             </div>
           )}
         </div>
       </div>
-
-      {/* Top Candidates */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Топ кандидатов</h2>
-        {topCandidates.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Кандидат
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Средний балл
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Количество вопросов
-                  </th>
-                  <th className="px-6 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {topCandidates.map((candidate, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
-                          <span className="text-primary-700 font-medium">
-                            {candidate.full_name.charAt(0)}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {candidate.full_name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-gray-900">
-                        {candidate.avg_score}/10
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {candidate.questions_count}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button className="p-2 hover:bg-gray-200 rounded-full" title="Поделиться">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">Нет данных о кандидатах</p>
-        )}
-      </div>
-
-      {/* Activity Timeline */}
-      {activityTimeline?.timeline && activityTimeline.timeline.length > 0 && (
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Активность по дням</h2>
-          <div className="space-y-3">
-            {activityTimeline.timeline.slice(-7).map((item, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  {new Date(item.date).toLocaleDateString()}
-                </span>
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 bg-primary-600 rounded" style={{ width: `${Math.min(item.count * 10, 100)}px` }}></div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {item.count}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

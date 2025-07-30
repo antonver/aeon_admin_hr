@@ -11,6 +11,9 @@ RUN npm install
 # Копирование исходного кода
 COPY . .
 
+# Установка прав доступа для node_modules
+RUN chmod +x node_modules/.bin/*
+
 # Открытие порта
 EXPOSE 3000
 

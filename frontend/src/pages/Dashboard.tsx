@@ -4,14 +4,12 @@ import {
   Users, 
   UserCheck, 
   UserX, 
-  TrendingUp,
-  Plus,
-  Search
+  TrendingUp
 } from 'lucide-react';
 
 interface Metrics {
   total_candidates: number;
-  active_candidates: number;
+  passed_candidates: number;
   test_pass_rate: number;
 }
 
@@ -36,7 +34,7 @@ const Dashboard: React.FC = () => {
       .catch(err => console.error('Ошибка загрузки метрик:', err));
 
     // Загрузка последних кандидатов
-    fetch('/api/candidates?limit=5')
+    fetch('/api/candidates/?limit=5')
       .then(res => res.json())
       .then(data => setRecentCandidates(data))
       .catch(err => console.error('Ошибка загрузки кандидатов:', err))
@@ -63,13 +61,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-headers text-background mb-2">Дашборд</h1>
-          <p className="text-main text-background-2">Обзор HR-процессов и кандидатов</p>
-        </div>
-      </div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -93,9 +84,9 @@ const Dashboard: React.FC = () => {
               <UserCheck className="h-8 w-8 text-accept" />
             </div>
             <div className="ml-4">
-              <p className="text-add text-background-2">Активные кандидаты</p>
+              <p className="text-add text-background-2">Прошедшие кандидаты</p>
               <p className="text-subheaders text-background font-bold">
-                {metrics?.active_candidates || 0}
+                {metrics?.passed_candidates || 0}
               </p>
             </div>
           </div>
@@ -123,7 +114,7 @@ const Dashboard: React.FC = () => {
             <div className="ml-4">
               <p className="text-add text-background-2">Отклонённые</p>
               <p className="text-subheaders text-background font-bold">
-                {recentCandidates.filter(c => c.status === 'отклонён').length}
+                {(metrics?.total_candidates || 0) - (metrics?.passed_candidates || 0)}
               </p>
             </div>
           </div>

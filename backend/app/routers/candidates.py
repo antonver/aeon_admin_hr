@@ -25,14 +25,16 @@ async def get_candidates_count(
     if search:
         query = query.filter(Candidate.full_name.ilike(f"%{search}%"))
     if status:
-        query = query.filter(Candidate.status == status)
+        # Фильтруем только по "прошёл" и "отклонён"
+        if status in ["прошёл", "отклонён"]:
+            query = query.filter(Candidate.status == status)
     total = query.count()
     return {"total": total}
 
 @router.get("/", response_model=List[CandidateModel])
 async def get_candidates(
     search: Optional[str] = Query(None, description="Поиск по ФИО"),
-    status: Optional[str] = Query(None, description="Фильтр по статусу"),
+    status: Optional[str] = Query(None, description="Фильтр по статусу: прошёл, отклонён"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -44,7 +46,9 @@ async def get_candidates(
         query = query.filter(Candidate.full_name.ilike(f"%{search}%"))
     
     if status:
-        query = query.filter(Candidate.status == status)
+        # Фильтруем только по "прошёл" и "отклонён"
+        if status in ["прошёл", "отклонён"]:
+            query = query.filter(Candidate.status == status)
     
     candidates = query.offset(skip).limit(limit).all()
     return candidates

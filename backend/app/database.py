@@ -26,10 +26,11 @@ class Candidate(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, nullable=False)
+    name = Column(String, nullable=True)  # Добавляем поле name
     telegram_username = Column(String, nullable=True)
     telegram_id = Column(String, nullable=True)
     results = Column(String, nullable=True)
-    status = Column(String, default="ожидает")  # ожидает, прошёл, приглашён, отклонён
+    status = Column(String, default="ожидает")  # ожидает, прошёл, отклонён
     last_action_date = Column(DateTime, default=datetime.utcnow)
     last_action_type = Column(String, nullable=True)
     notion_id = Column(String, nullable=True)
@@ -82,7 +83,10 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)  # хранить хеш!
+    email = Column(String, unique=True, nullable=True)  # может быть null для Telegram пользователей
+    password = Column(String, nullable=True)  # может быть null для Telegram пользователей
+    telegram_id = Column(String, unique=True, nullable=True)
+    telegram_username = Column(String, nullable=True)
+    is_admin = Column(Boolean, default=False)  # флаг администратора
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) 

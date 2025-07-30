@@ -5,6 +5,7 @@ from datetime import datetime
 # Базовые модели
 class CandidateBase(BaseModel):
     full_name: str
+    name: Optional[str] = None  # Добавляем поле name
     telegram_username: Optional[str] = None
     
 
@@ -15,6 +16,7 @@ class CandidateCreate(CandidateBase):
 
 class CandidateUpdate(BaseModel):
     full_name: Optional[str] = None
+    name: Optional[str] = None  # Добавляем поле name
     telegram_username: Optional[str] = None
     telegram_id: Optional[str] = None
     results: Optional[str] = None
@@ -89,7 +91,7 @@ class Notification(NotificationBase):
 # Модели для метрик
 class Metrics(BaseModel):
     total_candidates: int
-    active_candidates: int
+    passed_candidates: int
     test_pass_rate: float
 
 # Модели для фильтрации
@@ -108,10 +110,19 @@ class QuickAction(BaseModel):
 class UserProfile(BaseModel):
     id: int
     name: str
-    email: str
+    email: Optional[str] = None
+    telegram_id: Optional[str] = None
+    telegram_username: Optional[str] = None
+    is_admin: bool
 
 class UserProfileUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     current_password: Optional[str] = None
-    new_password: Optional[str] = None 
+    new_password: Optional[str] = None
+
+class TelegramAuthRequest(BaseModel):
+    init_data: str
+
+class AdminCreateRequest(BaseModel):
+    telegram_username: str 

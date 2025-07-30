@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft,
-  MessageSquare,
-  Send,
-  Copy,
   Edit,
   Save,
   X
@@ -13,24 +10,17 @@ import {
 interface Candidate {
   id: number;
   full_name: string;
+  name?: string;
   telegram_username?: string;
-  email?: string;
-  phone?: string;
   status: string;
+  results?: string;
   last_action_date: string;
   last_action_type?: string;
   created_at: string;
   updated_at: string;
 }
 
-interface InterviewLog {
-  id: number;
-  question: string;
-  answer: string;
-  score?: number;
-  category?: string;
-  created_at: string;
-}
+
 
 interface Comment {
   id: number;
@@ -42,15 +32,11 @@ const CandidateDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [editData, setEditData] = useState<Partial<Candidate>>({});
-  const [interviewLogs, setInterviewLogs] = useState<InterviewLog[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const [telegramMessage, setTelegramMessage] = useState('');
-  const [showFormatModal, setShowFormatModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -66,18 +52,15 @@ const CandidateDetail: React.FC = () => {
 
   const fetchCandidateData = async () => {
     try {
-      const [candidateRes, logsRes, commentsRes] = await Promise.all([
+      const [candidateRes, commentsRes] = await Promise.all([
         fetch(`/api/candidates/${id}`),
-        fetch(`/api/candidates/${id}/interview-logs`),
         fetch(`/api/candidates/${id}/comments`)
       ]);
 
       const candidateData = await candidateRes.json();
-      const logsData = await logsRes.json();
       const commentsData = await commentsRes.json();
 
       setCandidate(candidateData);
-      setInterviewLogs(logsData);
       setComments(commentsData);
     } catch (error) {
       console.error('Ошибка загрузки данных кандидата:', error);
@@ -96,36 +79,7 @@ const CandidateDetail: React.FC = () => {
     }
   };
 
-  const handleQuickAction = async (action: string, data?: any) => {
-    if (!candidate) return;
-    try {
-      let body: any = {
-        action_type: action,
-        candidate_id: candidate.id,
-      };
-      if (action === 'telegram_message' && data?.message) {
-        body.data = { message: data.message };
-      }
-      const response = await fetch(`/api/candidates/${candidate.id}/quick-action`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-      if (response.ok) {
-        fetchCandidateData();
-        setActionMessage('Действие выполнено');
-        setTimeout(() => setActionMessage(null), 3000);
-      } else {
-        setActionMessage('Ошибка выполнения действия');
-        setTimeout(() => setActionMessage(null), 3000);
-      }
-    } catch (error) {
-      setActionMessage('Ошибка выполнения действия');
-      setTimeout(() => setActionMessage(null), 3000);
-    }
-  };
+
 
   const handleAddComment = async () => {
     if (!candidate || !newComment.trim()) return;
@@ -151,7 +105,7 @@ const CandidateDetail: React.FC = () => {
 
   const copyCandidateData = () => {
     if (!candidate) return;
-    const data = `Имя: ${candidate.full_name}\nTelegram: ${candidate.telegram_username || 'Нет'}\nEmail: ${candidate.email || 'Нет'}\nТелефон: ${candidate.phone || 'Нет'}\nСтатус: ${candidate.status}`;
+    const data = `Имя: ${candidate.full_name}\nTelegram: ${candidate.telegram_username || 'Нет'}\nСтатус: ${candidate.status}`;
     navigator.clipboard.writeText(data);
     setActionMessage('Данные скопированы в буфер обмена');
     setTimeout(() => setActionMessage(null), 3000);
@@ -186,29 +140,7 @@ const CandidateDetail: React.FC = () => {
     }
   };
 
-  // New handler for sending candidate data in selected format
-  const handleSendCandidateData = async (format: string) => {
-    if (!candidate) return;
-    try {
-      const response = await fetch(`/api/candidates/${candidate.id}/send-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format }),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        setActionMessage(result.message || 'Данные отправлены');
-      } else {
-        const error = await response.json();
-        setActionMessage(error.detail || 'Ошибка отправки данных');
-      }
-    } catch (error) {
-      setActionMessage('Ошибка отправки данных');
-    } finally {
-      setShowFormatModal(false);
-      setTimeout(() => setActionMessage(null), 3000);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -237,68 +169,7 @@ const CandidateDetail: React.FC = () => {
           {actionMessage}
         </div>
       )}
-      {/* Format Selection Modal */}
-      {showFormatModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-xs">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Выберите формат</h2>
-              <button
-                onClick={() => setShowFormatModal(false)}
-                className="text-background-2 hover:text-background"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData('csv')}>CSV</button>
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData('md')}>Markdown</button>
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData('json')}>JSON</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Модальное окно Telegram */}
-      {showTelegramModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Сообщение в Telegram</h2>
-              <button
-                onClick={() => setShowTelegramModal(false)}
-                className="text-background-2 hover:text-background"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <textarea
-              className="input-field w-full h-28 mb-4"
-              placeholder="Введите сообщение..."
-              value={telegramMessage}
-              onChange={e => setTelegramMessage(e.target.value)}
-            />
-            <div className="flex gap-3">
-              <button
-                className="btn btn-primary flex-1"
-                disabled={!telegramMessage.trim()}
-                onClick={async () => {
-                  await handleQuickAction('telegram_message', { message: telegramMessage });
-                  setShowTelegramModal(false);
-                  setTelegramMessage('');
-                }}
-              >
-                Отправить
-              </button>
-              <button
-                className="btn btn-outline flex-1"
-                onClick={() => setShowTelegramModal(false)}
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -378,104 +249,31 @@ const CandidateDetail: React.FC = () => {
                   placeholder="@username"
                 />
               </div>
-              <div>
-                <label className="block text-main text-background mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={editing ? editData.email || '' : candidate.email || ''}
-                  disabled={!editing}
-                  onChange={e => handleEditChange('email', e.target.value)}
-                  className="input-field"
-                />
-              </div>
-              <div>
-                <label className="block text-main text-background mb-1">
-                  Телефон
-                </label>
-                <input
-                  type="tel"
-                  value={editing ? editData.phone || '' : candidate.phone || ''}
-                  disabled={!editing}
-                  onChange={e => handleEditChange('phone', e.target.value)}
-                  className="input-field"
-                  placeholder="+7 (999) 123-45-67"
-                />
-              </div>
+
             </div>
           </div>
 
-          {/* Логи интервью */}
+          {/* Результаты тестирования */}
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Отчёт ÆON-интервью</h2>
-            {interviewLogs.length > 0 ? (
+            {candidate.results ? (
               <div className="space-y-4">
-                {interviewLogs.map((log) => (
-                  <div key={log.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-900">{log.question}</h3>
-                      {log.score && (
-                        <span className="text-sm text-gray-500">Балл: {log.score}/10</span>
-                      )}
-                    </div>
-                    <p className="text-gray-700">{log.answer}</p>
-                    {log.category && (
-                      <span className="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                        {log.category}
-                      </span>
-                    )}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">Результаты тестирования</h3>
                   </div>
-                ))}
+                  <p className="text-gray-700 whitespace-pre-wrap">{candidate.results}</p>
+                </div>
               </div>
             ) : (
-              <p className="text-gray-500">Логи интервью отсутствуют</p>
+              <p className="text-gray-500">Результаты тестирования отсутствуют</p>
             )}
           </div>
         </div>
 
         {/* Боковая панель */}
         <div className="space-y-6">
-          {/* Быстрые действия */}
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Быстрые действия</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => setShowFormatModal(true)}
-                className="w-full btn-primary flex items-center justify-center space-x-2"
-              >
-                <Send className="h-4 w-4" />
-                <span>Пригласить на тест</span>
-              </button>
-              
-              {candidate.telegram_username && (
-                <button
-                  onClick={() => setShowTelegramModal(true)}
-                  className="w-full btn-secondary flex items-center justify-center space-x-2"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Написать в Telegram</span>
-                </button>
-              )}
-              
-              <button
-                onClick={copyCandidateData}
-                className="w-full btn-secondary flex items-center justify-center space-x-2"
-              >
-                <Copy className="h-4 w-4" />
-                <span>Скопировать данные</span>
-              </button>
-              {/* Share button, no functionality for now */}
-              <button
-                className="w-full btn-secondary flex items-center justify-center space-x-2"
-                title="Поделиться"
-                type="button"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                <span>Поделиться</span>
-              </button>
-            </div>
-          </div>
+
 
           {/* Комментарии HR */}
           <div className="card">

@@ -3,32 +3,22 @@ import { Link } from 'react-router-dom';
 import { 
   Search, 
   Filter, 
-  Plus,
-  MessageSquare,
-  Send,
-  Copy,
   Eye,
-  Calendar,
-  User,
-  X
+  Calendar
 } from 'lucide-react';
 
 interface Candidate {
   id: number;
   full_name: string;
+  name?: string;  // Добавляем поле name
   telegram_username?: string;
   email?: string;
-  status: string;
+  status: string;  // Теперь только "прошёл" и "отклонён"
   last_action_date: string;
   last_action_type?: string;
 }
 
-interface NewCandidate {
-  full_name: string;
-  telegram_username: string;
-  email: string;
-  phone?: string;
-}
+
 
 const PAGE_SIZE = 10;
 
@@ -38,21 +28,9 @@ const CandidatesList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newCandidate, setNewCandidate] = useState<NewCandidate>({
-    full_name: '',
-    telegram_username: '',
-    email: '',
-    phone: ''
-  });
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const [telegramMessage, setTelegramMessage] = useState('');
-  const [telegramCandidateId, setTelegramCandidateId] = useState<number | null>(null);
+
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [showFormatModal, setShowFormatModal] = useState(false);
-  const [formatCandidateId, setFormatCandidateId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCandidates();
@@ -71,7 +49,7 @@ const CandidatesList: React.FC = () => {
       params.append('skip', String((page - 1) * PAGE_SIZE));
       params.append('limit', String(PAGE_SIZE));
       
-      const url = `/api/candidates?${params}`;
+      const url = `/api/candidates/?${params}`;
       console.log('URL запроса:', url);
       
       const response = await fetch(url);
@@ -105,109 +83,13 @@ const CandidatesList: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ожидает': return 'status-waiting';
       case 'прошёл': return 'status-passed';
-      case 'приглашён': return 'status-invited';
       case 'отклонён': return 'status-rejected';
       default: return 'status-waiting';
     }
   };
 
-  const handleQuickAction = async (candidateId: number, action: string, data?: any) => {
-    try {
-      let message = '';
-      
-      if (action === 'copy_data') {
-        const candidate = candidates.find(c => c.id === candidateId);
-        if (candidate) {
-          const dataToCopy = `Имя: ${candidate.full_name}\nTelegram: ${candidate.telegram_username || 'Не указан'}\nEmail: ${candidate.email || 'Не указан'}`;
-          await navigator.clipboard.writeText(dataToCopy);
-          message = 'Данные скопированы в буфер обмена';
-        }
-      } else {
-        let body: any = {
-          action_type: action,
-          candidate_id: candidateId,
-        };
-        if (action === 'telegram_message' && data?.message) {
-          body.data = { message: data.message };
-        }
-        const response = await fetch(`/api/candidates/${candidateId}/quick-action`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          message = result.message || `Действие ${action} выполнено`;
-          // Обновить список кандидатов
-          fetchCandidates();
-        } else {
-          throw new Error('Ошибка выполнения действия');
-        }
-      }
-      
-      setActionMessage(message);
-      setTimeout(() => setActionMessage(null), 3000);
-    } catch (error) {
-      console.error('Ошибка выполнения действия:', error);
-      setActionMessage('Ошибка выполнения действия');
-      setTimeout(() => setActionMessage(null), 3000);
-    }
-  };
 
-  const handleAddCandidate = async () => {
-    try {
-      const response = await fetch('/api/candidates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newCandidate),
-      });
-      
-      if (response.ok) {
-        setShowAddModal(false);
-        setNewCandidate({ full_name: '', telegram_username: '', email: '', phone: '' });
-        fetchCandidates();
-        setActionMessage('Кандидат успешно добавлен');
-        setTimeout(() => setActionMessage(null), 3000);
-      } else {
-        throw new Error('Ошибка добавления кандидата');
-      }
-    } catch (error) {
-      console.error('Ошибка добавления кандидата:', error);
-      setActionMessage('Ошибка добавления кандидата');
-      setTimeout(() => setActionMessage(null), 3000);
-    }
-  };
-
-  // New handler for sending candidate data in selected format
-  const handleSendCandidateData = async (candidateId: number, format: string) => {
-    try {
-      const response = await fetch(`/api/candidates/${candidateId}/send-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format }),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        setActionMessage(result.message || 'Данные отправлены');
-      } else {
-        const error = await response.json();
-        setActionMessage(error.detail || 'Ошибка отправки данных');
-      }
-    } catch (error) {
-      setActionMessage('Ошибка отправки данных');
-    } finally {
-      setShowFormatModal(false);
-      setFormatCandidateId(null);
-      setTimeout(() => setActionMessage(null), 3000);
-    }
-  };
 
   if (loading) {
     return (
@@ -239,85 +121,6 @@ const CandidatesList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Action Message */}
-      {actionMessage && (
-        <div className="fixed top-4 right-4 bg-main text-white px-6 py-3 rounded-lg shadow-lg z-50">
-          {actionMessage}
-        </div>
-      )}
-      {/* Модальное окно Telegram */}
-      {showTelegramModal && telegramCandidateId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Сообщение в Telegram</h2>
-              <button
-                onClick={() => setShowTelegramModal(false)}
-                className="text-background-2 hover:text-background"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <textarea
-              className="input-field w-full h-28 mb-4"
-              placeholder="Введите сообщение..."
-              value={telegramMessage}
-              onChange={e => setTelegramMessage(e.target.value)}
-            />
-            <div className="flex gap-3">
-              <button
-                className="btn btn-primary flex-1"
-                disabled={!telegramMessage.trim()}
-                onClick={async () => {
-                  await handleQuickAction(telegramCandidateId, 'telegram_message', { message: telegramMessage });
-                  setShowTelegramModal(false);
-                  setTelegramMessage('');
-                  setTelegramCandidateId(null);
-                }}
-              >
-                Отправить
-              </button>
-              <button
-                className="btn btn-outline flex-1"
-                onClick={() => setShowTelegramModal(false)}
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Format Selection Modal */}
-      {showFormatModal && formatCandidateId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-xs">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Выберите формат</h2>
-              <button
-                onClick={() => { setShowFormatModal(false); setFormatCandidateId(null); }}
-                className="text-background-2 hover:text-background"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'csv')}>CSV</button>
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'md')}>Markdown</button>
-              <button className="btn btn-primary" onClick={() => handleSendCandidateData(formatCandidateId, 'json')}>JSON</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-headers text-background mb-2">Кандидаты</h1>
-          <p className="text-main text-background-2">
-            Управление кандидатами и их статусами
-          </p>
-        </div>
-        {/* Removed the 'Добавить кандидата' button here */}
-      </div>
 
       {/* Filters */}
       <div className="card">
@@ -339,11 +142,9 @@ const CandidatesList: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="input-field w-48"
           >
-            <option value="">Все статусы</option>
-            <option value="ожидает">Ожидает</option>
-            <option value="прошёл">Прошёл</option>
-            <option value="приглашён">Приглашён</option>
-            <option value="отклонён">Отклонён</option>
+            <option value="">Все кандидаты</option>
+            <option value="прошёл">Прошедшие</option>
+            <option value="отклонён">Не прошедшие</option>
           </select>
           <button
             onClick={fetchCandidates}
@@ -364,7 +165,7 @@ const CandidatesList: React.FC = () => {
                 <th>Кандидат</th>
                 <th>Контакты</th>
                 <th>Статус</th>
-                <th>Последнее действие</th>
+                <th>Дата прохождения</th>
                 <th>Действия</th>
               </tr>
             </thead>
@@ -408,14 +209,9 @@ const CandidatesList: React.FC = () => {
                     </span>
                   </td>
                   <td>
-                    <div className="space-y-1">
-                      <div className="text-add text-background-2">
-                        {candidate.last_action_type || 'Нет действий'}
-                      </div>
-                      <div className="flex items-center gap-2 text-time text-background-2">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(candidate.last_action_date).toLocaleDateString()}
-                      </div>
+                    <div className="flex items-center gap-2 text-time text-background-2">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(candidate.last_action_date).toLocaleDateString()}
                     </div>
                   </td>
                   <td>
@@ -427,32 +223,6 @@ const CandidatesList: React.FC = () => {
                       >
                         <Eye className="w-5 h-5" />
                       </Link>
-                      {candidate.telegram_username && (
-                        <button
-                          onClick={() => {
-                            setTelegramCandidateId(candidate.id);
-                            setShowTelegramModal(true);
-                          }}
-                          className="p-2 text-background-2 hover:text-accent transition-colors"
-                          title="Написать в Telegram"
-                        >
-                          <MessageSquare className="w-5 h-5" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => { setFormatCandidateId(candidate.id); setShowFormatModal(true); }}
-                        className="p-2 text-background-2 hover:text-accept transition-colors"
-                        title="Отправить данные в Telegram"
-                      >
-                        <Send className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleQuickAction(candidate.id, 'copy_data')}
-                        className="p-2 text-background-2 hover:text-secondary transition-colors"
-                        title="Скопировать данные"
-                      >
-                        <Copy className="w-5 h-5" />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -490,84 +260,7 @@ const CandidatesList: React.FC = () => {
         )}
       </div>
 
-      {/* Add Candidate Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-subheaders text-background font-bold">Добавить кандидата</h2>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-background-2 hover:text-background"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-main text-background mb-2">ФИО *</label>
-                <input
-                  type="text"
-                  value={newCandidate.full_name}
-                  onChange={(e) => setNewCandidate({...newCandidate, full_name: e.target.value})}
-                  className="input-field"
-                  placeholder="Введите ФИО"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-main text-background mb-2">Telegram</label>
-                <input
-                  type="text"
-                  value={newCandidate.telegram_username}
-                  onChange={(e) => setNewCandidate({...newCandidate, telegram_username: e.target.value})}
-                  className="input-field"
-                  placeholder="@username"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-main text-background mb-2">Email</label>
-                <input
-                  type="email"
-                  value={newCandidate.email}
-                  onChange={(e) => setNewCandidate({...newCandidate, email: e.target.value})}
-                  className="input-field"
-                  placeholder="email@example.com"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-main text-background mb-2">Телефон</label>
-                <input
-                  type="tel"
-                  value={newCandidate.phone}
-                  onChange={(e) => setNewCandidate({...newCandidate, phone: e.target.value})}
-                  className="input-field"
-                  placeholder="+7 (999) 123-45-67"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleAddCandidate}
-                disabled={!newCandidate.full_name}
-                className="btn btn-primary flex-1"
-              >
-                Добавить
-              </button>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="btn btn-outline flex-1"
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
