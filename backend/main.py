@@ -51,6 +51,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def root():
     return FileResponse("static/index.html")
 
+@app.get("/manifest.json")
+async def manifest():
+    return FileResponse("static/manifest.json")
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
