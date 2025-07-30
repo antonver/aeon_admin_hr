@@ -26,4 +26,5 @@ ENV/
 env.bak/
 venv.bak/
 *.db
-*.sqlite3 
+*.sqlite3
+# Не исключаем папку static 

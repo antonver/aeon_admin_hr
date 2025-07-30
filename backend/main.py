@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import uvicorn
 from dotenv import load_dotenv
@@ -43,9 +44,12 @@ app.include_router(metrics.router, prefix="/api/metrics", tags=["metrics"])
 app.include_router(user.router, prefix="/api/user", tags=["user"])
 app.include_router(telegram_auth.router, prefix="/api/telegram", tags=["telegram"])
 
+# Подключаем статические файлы
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/")
 async def root():
-    return {"message": "HR Admin Panel API", "version": "1.0.0"}
+    return FileResponse("static/index.html")
 
 @app.get("/health")
 async def health_check():
@@ -58,6 +62,16 @@ async def api_health_check():
 @app.get("/api/")
 async def api_root():
     return {"message": "HR Admin Panel API", "version": "1.0.0"}
+
+# Catch-all route для SPA
+@app.get("/{full_path:path}")
+async def catch_all(full_path: str):
+    # Если это API запрос, пропускаем
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+    
+    # Для всех остальных путей возвращаем index.html
+    return FileResponse("static/index.html")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 
