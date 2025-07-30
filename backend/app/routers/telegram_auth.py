@@ -36,8 +36,12 @@ def validate_telegram_init_data(init_data: str) -> dict:
         
         # Для тестирования пропускаем проверку подписи если BOT_TOKEN не настроен
         if BOT_TOKEN and data_hash:
+            logging.info(f"BOT_TOKEN configured: {BOT_TOKEN[:10]}...")
+            logging.info(f"Data hash from request: {data_hash}")
+            
             # Убираем hash из данных для проверки
             data_check_string = init_data.replace(f"&hash={data_hash}", "").replace(f"hash={data_hash}&", "").replace(f"hash={data_hash}", "")
+            logging.info(f"Data check string: {data_check_string}")
             
             # Создаем секретный ключ
             secret_key = hmac.new(
@@ -53,9 +57,13 @@ def validate_telegram_init_data(init_data: str) -> dict:
                 hashlib.sha256
             ).hexdigest()
             
+            logging.info(f"Calculated hash: {calculated_hash}")
+            
             if calculated_hash != data_hash:
                 logging.error(f"Hash mismatch: expected {data_hash}, got {calculated_hash}")
                 raise HTTPException(status_code=400, detail="Неверная подпись init_data")
+        else:
+            logging.warning("BOT_TOKEN not configured or no hash provided, skipping signature validation")
         
         # Извлекаем данные пользователя
         user_data = {}
