@@ -18,18 +18,6 @@ const Admins: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Проверяем права доступа
-  if (!user?.is_admin) {
-    return (
-      <div className="container mt-4">
-        <div className="alert alert-danger">
-          <h4 className="alert-heading">Доступ запрещен</h4>
-          <p>У вас нет прав для просмотра этой страницы.</p>
-        </div>
-      </div>
-    );
-  }
-
   const fetchAdmins = async () => {
     if (!token) return;
     
@@ -92,6 +80,18 @@ const Admins: React.FC = () => {
   useEffect(() => {
     fetchAdmins();
   }, [token]);
+
+  // Проверяем права доступа
+  if (!user?.is_admin) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger">
+          <h4 className="alert-heading">Доступ запрещен</h4>
+          <p>У вас нет прав для просмотра этой страницы.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid">

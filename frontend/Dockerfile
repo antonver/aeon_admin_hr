@@ -6,16 +6,19 @@ WORKDIR /app
 COPY package*.json ./
 
 # Установка зависимостей
-RUN npm install
+RUN npm ci --only=production
 
 # Копирование исходного кода
 COPY . .
 
-# Установка прав доступа для node_modules
-RUN chmod +x node_modules/.bin/*
+# Сборка приложения
+RUN npm run build
+
+# Установка serve для продакшена
+RUN npm install -g serve
 
 # Открытие порта
 EXPOSE 3000
 
-# Команда запуска
-CMD ["npm", "start"] 
+# Команда запуска для продакшена
+CMD ["serve", "-s", "build", "-l", "3000"] 

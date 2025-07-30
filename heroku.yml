@@ -1,0 +1,11 @@
+build:
+  docker:
+    web: ./backend
+    frontend: ./frontend
+
+release:
+  command:
+    - cd backend && python init_heroku_db.py
+
+run:
+  web: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT 
