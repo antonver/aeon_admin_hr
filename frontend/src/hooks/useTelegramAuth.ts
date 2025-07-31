@@ -59,10 +59,13 @@ export const useTelegramAuth = () => {
       console.log('User is_admin type:', typeof data.user.is_admin);
       
       // Сохраняем токен и данные пользователя
+      console.log('Saving user data to localStorage:', data.user);
+      console.log('Saving user is_admin to localStorage:', data.user.is_admin);
       setToken(data.access_token);
       setUser(data.user);
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('User data saved to localStorage');
       
       return data;
     } catch (err) {
@@ -86,12 +89,17 @@ export const useTelegramAuth = () => {
     const savedToken = localStorage.getItem('access_token');
     const savedUser = localStorage.getItem('user');
 
+    console.log('checkAuth: savedToken exists:', !!savedToken);
+    console.log('checkAuth: savedUser exists:', !!savedUser);
+
     if (savedToken && savedUser) {
       try {
         console.log('Found saved user data:', savedUser);
         const parsedUser = JSON.parse(savedUser);
         console.log('Parsed user data:', parsedUser);
         console.log('Parsed user is_admin:', parsedUser.is_admin);
+        console.log('Parsed user is_admin type:', typeof parsedUser.is_admin);
+        console.log('Boolean(parsedUser.is_admin):', Boolean(parsedUser.is_admin));
         
         // Проверяем валидность токена
         const response = await fetch('/api/telegram/profile', {
