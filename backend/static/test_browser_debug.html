@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API пользователя</title>
+</head>
+<body>
+    <h1>Тест API пользователя</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        async function testAPI() {
+            log('Начинаем тест API...');
+            
+            try {
+                // Тестируем аутентификацию
+                log('Тестируем аутентификацию...');
+                const authResponse = await fetch('/api/telegram/telegram-auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        init_data: 'id=123456789&first_name=Test&last_name=User&username=testuser&auth_date=1234567890&hash=test_hash'
+                    })
+                });
+                
+                log('Auth response status: ' + authResponse.status);
+                
+                if (authResponse.ok) {
+                    const authData = await authResponse.json();
+                    log('Auth data: ' + JSON.stringify(authData, null, 2));
+                    log('User is_admin: ' + authData.user.is_admin);
+                    log('User is_admin type: ' + typeof authData.user.is_admin);
+                    
+                    // Тестируем профиль
+                    log('Тестируем профиль...');
+                    const profileResponse = await fetch('/api/telegram/profile', {
+                        headers: {
+                            'Authorization': `Bearer ${authData.access_token}`,
+                        }
+                    });
+                    
+                    log('Profile response status: ' + profileResponse.status);
+                    
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        log('Profile data: ' + JSON.stringify(profileData, null, 2));
+                        log('Profile is_admin: ' + profileData.is_admin);
+                        log('Profile is_admin type: ' + typeof profileData.is_admin);
+                    } else {
+                        log('Ошибка получения профиля: ' + profileResponse.status);
+                    }
+                } else {
+                    log('Ошибка аутентификации: ' + authResponse.status);
+                }
+            } catch (error) {
+                log('Ошибка: ' + error.message);
+            }
+        }
+        
+        // Запускаем тест при загрузке страницы
+        testAPI();
+    </script>
+</body>
+</html> 
