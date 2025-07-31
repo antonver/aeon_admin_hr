@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест React User Data</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        function TestUserComponent() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            
+            useEffect(() => {
+                console.log('TestUserComponent: useEffect triggered');
+                
+                // Симулируем данные пользователя
+                const testUser = {
+                    id: 1,
+                    name: "Test User",
+                    email: "test@example.com",
+                    telegram_id: "123456789",
+                    telegram_username: "testuser",
+                    is_admin: true
+                };
+                
+                console.log('TestUserComponent: testUser:', testUser);
+                console.log('TestUserComponent: testUser.is_admin:', testUser.is_admin);
+                console.log('TestUserComponent: testUser.is_admin type:', typeof testUser.is_admin);
+                console.log('TestUserComponent: Boolean(testUser.is_admin):', Boolean(testUser.is_admin));
+                
+                setUser(testUser);
+                setLoading(false);
+            }, []);
+            
+            useEffect(() => {
+                if (user) {
+                    console.log('TestUserComponent: user changed:', user);
+                    console.log('TestUserComponent: user.is_admin:', user.is_admin);
+                    console.log('TestUserComponent: user.is_admin type:', typeof user.is_admin);
+                    console.log('TestUserComponent: Boolean(user.is_admin):', Boolean(user.is_admin));
+                    
+                    // Тестируем логику навигации
+                    const navigation = [
+                        { name: 'Дашборд', href: '/', icon: 'Home' },
+                        { name: 'Кандидаты', href: '/candidates', icon: 'Users' },
+                        { name: 'Метрики', href: '/metrics', icon: 'BarChart3' },
+                    ];
+                    
+                    console.log('TestUserComponent: Initial navigation:', navigation);
+                    
+                    // Проверяем разные варианты проверки is_admin
+                    const isAdmin1 = user.is_admin === true;
+                    const isAdmin2 = Boolean(user.is_admin);
+                    const isAdmin3 = !!user.is_admin;
+                    const isAdmin4 = user.is_admin;
+                    
+                    console.log('TestUserComponent: isAdmin checks:');
+                    console.log('  isAdmin1 (=== true):', isAdmin1);
+                    console.log('  isAdmin2 (Boolean):', isAdmin2);
+                    console.log('  isAdmin3 (!!):', isAdmin3);
+                    console.log('  isAdmin4 (direct):', isAdmin4);
+                    
+                    if (isAdmin2) {
+                        navigation.push({ name: 'Администраторы', href: '/admins', icon: 'Shield' });
+                        console.log('TestUserComponent: Added admin navigation item');
+                    } else {
+                        console.log('TestUserComponent: User is not admin, skipping admin navigation');
+                    }
+                    
+                    console.log('TestUserComponent: Final navigation:', navigation);
+                }
+            }, [user]);
+            
+            if (loading) {
+                return <div>Загрузка...</div>;
+            }
+            
+            return (
+                <div>
+                    <h1>Тест React User Data</h1>
+                    {user && (
+                        <div>
+                            <h2>Данные пользователя:</h2>
+                            <pre>{JSON.stringify(user, null, 2)}</pre>
+                            <p><strong>is_admin:</strong> {user.is_admin} (тип: {typeof user.is_admin})</p>
+                            <p><strong>Boolean(is_admin):</strong> {Boolean(user.is_admin).toString()}</p>
+                            <p><strong>!!is_admin:</strong> {!!user.is_admin}</p>
+                            <p><strong>is_admin === true:</strong> {(user.is_admin === true).toString()}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<TestUserComponent />, document.getElementById('root'));
+    </script>
+</body>
+</html> 
