@@ -55,6 +55,8 @@ export const useTelegramAuth = () => {
 
       const data: AuthResponse = await response.json();
       console.log('Auth success:', data);
+      console.log('User is_admin:', data.user.is_admin);
+      console.log('User is_admin type:', typeof data.user.is_admin);
       
       // Сохраняем токен и данные пользователя
       setToken(data.access_token);
@@ -86,6 +88,11 @@ export const useTelegramAuth = () => {
 
     if (savedToken && savedUser) {
       try {
+        console.log('Found saved user data:', savedUser);
+        const parsedUser = JSON.parse(savedUser);
+        console.log('Parsed user data:', parsedUser);
+        console.log('Parsed user is_admin:', parsedUser.is_admin);
+        
         // Проверяем валидность токена
         const response = await fetch('/api/telegram/profile', {
           headers: {
@@ -95,6 +102,9 @@ export const useTelegramAuth = () => {
 
         if (response.ok) {
           const userData = await response.json();
+          console.log('Profile check - user data:', userData);
+          console.log('Profile check - is_admin:', userData.is_admin);
+          console.log('Profile check - is_admin type:', typeof userData.is_admin);
           setToken(savedToken);
           setUser(userData);
         } else {

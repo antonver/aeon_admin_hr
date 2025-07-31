@@ -17,6 +17,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user, token, loading, authenticate, logout } = useTelegramAuth();
+  
+  // Добавляем логирование при изменении пользователя
+  useEffect(() => {
+    console.log('Layout: user changed:', user);
+    console.log('Layout: user is_admin:', user?.is_admin);
+    console.log('Layout: user is_admin type:', typeof user?.is_admin);
+  }, [user]);
 
   // --- СТЕЙТ ДЛЯ МОДАЛКИ НАСТРОЕК ---
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -114,8 +121,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Добавляем пункт управления админами только для админов
   console.log('User data:', user);
   console.log('Is admin:', user?.is_admin);
+  console.log('Is admin type:', typeof user?.is_admin);
+  console.log('User is_admin value:', user?.is_admin);
   
-  if (user?.is_admin) {
+  // Проверяем разные варианты значения is_admin
+  const isAdmin = Boolean(user?.is_admin);
+  console.log('Final isAdmin check:', isAdmin);
+  
+  if (isAdmin) {
     navigation.push({ name: 'Администраторы', href: '/admins', icon: Shield });
     console.log('Added admin navigation item');
   } else {
@@ -300,6 +313,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 // Helper to render sidebar content
 function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
+  console.log('renderSidebar called with:', { showProfileSection, onlyProfileSection });
+  console.log('renderSidebar - user:', user);
+  console.log('renderSidebar - navigation:', navigation);
+  
   if (onlyProfileSection) {
     // Inline profile section since ProfileSection component is missing
     return (
@@ -337,6 +354,7 @@ function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
       <ul className="nav flex-column mb-4">
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
+          console.log('Rendering nav item:', item.name, 'isActive:', isActive);
           return (
             <li className="nav-item" key={item.name}>
               <Link
