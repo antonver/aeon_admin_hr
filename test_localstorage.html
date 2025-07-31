@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест localStorage</title>
+</head>
+<body>
+    <h1>Тест localStorage</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        function testLocalStorage() {
+            log('Проверяем localStorage...');
+            
+            const accessToken = localStorage.getItem('access_token');
+            const userData = localStorage.getItem('user');
+            
+            log('access_token: ' + (accessToken ? 'есть' : 'нет'));
+            log('user: ' + (userData ? 'есть' : 'нет'));
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    log('Parsed user data: ' + JSON.stringify(user, null, 2));
+                    log('User is_admin: ' + user.is_admin);
+                    log('User is_admin type: ' + typeof user.is_admin);
+                    log('Boolean(user.is_admin): ' + Boolean(user.is_admin));
+                } catch (e) {
+                    log('Ошибка парсинга user data: ' + e.message);
+                }
+            }
+            
+            // Очищаем localStorage для теста
+            log('Очищаем localStorage для чистого теста...');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            log('localStorage очищен');
+        }
+        
+        // Запускаем тест при загрузке страницы
+        testLocalStorage();
+    </script>
+</body>
+</html> 
