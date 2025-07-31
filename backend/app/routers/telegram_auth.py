@@ -144,24 +144,31 @@ async def telegram_auth(
         user = db.query(User).filter(User.telegram_id == str(telegram_id)).first()
         
         if not user:
-            # Создаем нового пользователя
-            user = User(
-                name=f"{first_name} {last_name}".strip(),
-                telegram_id=str(telegram_id),
-                telegram_username=username,
-                is_admin=False  # По умолчанию не админ
-            )
+            # Проверяем, есть ли админы в системе
+            total_admins = db.query(User).filter(User.is_admin == True).count()
             
-            # Если это первый пользователь в системе, делаем его админом
-            total_users = db.query(User).count()
-            if total_users == 0:
-                user.is_admin = True
-                logging.info(f"Первый пользователь {telegram_id} назначен администратором")
+            if total_admins == 0:
+                # Если нет админов, создаем первого админа
+                user = User(
+                    name=f"{first_name} {last_name}".strip(),
+                    telegram_id=str(telegram_id),
+                    telegram_username=username,
+                    is_admin=True
+                )
+                logging.info(f"Создан первый администратор: {user.name} (ID: {user.id})")
+            else:
+                # Если админы есть, создаем обычного пользователя
+                user = User(
+                    name=f"{first_name} {last_name}".strip(),
+                    telegram_id=str(telegram_id),
+                    telegram_username=username,
+                    is_admin=False
+                )
+                logging.info(f"Создан новый пользователь: {user.name} (ID: {user.id})")
             
             db.add(user)
             db.commit()
             db.refresh(user)
-            logging.info(f"Создан новый пользователь: {user.name} (ID: {user.id})")
         else:
             # Обновляем данные существующего пользователя
             user.name = f"{first_name} {last_name}".strip()
@@ -169,6 +176,13 @@ async def telegram_auth(
             db.commit()
             db.refresh(user)
             logging.info(f"Обновлен пользователь: {user.name} (ID: {user.id})")
+        
+        # Проверяем, является ли пользователь админом
+        if not user.is_admin:
+            raise HTTPException(
+                status_code=403, 
+                detail="Доступ запрещен. Только администраторы могут использовать это приложение."
+            )
         
         # Генерируем JWT токен
         token = jwt.encode(

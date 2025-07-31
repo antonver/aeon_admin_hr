@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 
 from app.database import engine, Base
-from app.routers import candidates, notifications, metrics, user, telegram_auth
+from app.routers import candidates, notifications, metrics, user, telegram_auth, admins
 from app.services.telegram_service import TelegramService
 from app.services.notion_service import NotionService
 
@@ -31,7 +31,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +43,7 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["not
 app.include_router(metrics.router, prefix="/api/metrics", tags=["metrics"])
 app.include_router(user.router, prefix="/api/user", tags=["user"])
 app.include_router(telegram_auth.router, prefix="/api/telegram", tags=["telegram"])
+app.include_router(admins.router, prefix="/api", tags=["admins"])
 
 # Подключаем статические файлы
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -78,7 +79,7 @@ async def api_root():
 # Catch-all route для SPA
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
-    # Если это API запрос, пропускаем
+    # Если это API запрос, возвращаем 404
     if full_path.startswith("api/"):
         raise HTTPException(status_code=404, detail="API endpoint not found")
     
