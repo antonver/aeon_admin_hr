@@ -112,8 +112,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   // Добавляем пункт управления админами только для админов
+  console.log('User data:', user);
+  console.log('Is admin:', user?.is_admin);
+  
   if (user?.is_admin) {
     navigation.push({ name: 'Администраторы', href: '/admins', icon: Shield });
+    console.log('Added admin navigation item');
+  } else {
+    console.log('User is not admin, skipping admin navigation');
   }
 
   return (
