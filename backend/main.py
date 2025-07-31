@@ -59,6 +59,10 @@ async def manifest():
 async def test_telegram():
     return FileResponse("static/test-telegram.html")
 
+@app.get("/debug")
+async def debug():
+    return FileResponse("static/debug.html")
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
