@@ -4,13 +4,22 @@ import {
   Users, 
   UserCheck, 
   UserX, 
-  TrendingUp
+  TrendingUp,
+  Bell
 } from 'lucide-react';
 
 interface Metrics {
   total_candidates: number;
   passed_candidates: number;
   test_pass_rate: number;
+}
+
+interface NotificationStats {
+  total: number;
+  telegram_sent: number;
+  notion_sent: number;
+  success_rate: number;
+  type_stats: Array<{type: string; count: number}>;
 }
 
 interface Candidate {
@@ -23,6 +32,7 @@ interface Candidate {
 
 const Dashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [notificationStats, setNotificationStats] = useState<NotificationStats | null>(null);
   const [recentCandidates, setRecentCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +42,12 @@ const Dashboard: React.FC = () => {
       .then(res => res.json())
       .then(data => setMetrics(data))
       .catch(err => console.error('Ошибка загрузки метрик:', err));
+
+    // Загрузка статистики уведомлений
+    fetch('/api/notifications/stats')
+      .then(res => res.json())
+      .then(data => setNotificationStats(data))
+      .catch(err => console.error('Ошибка загрузки статистики уведомлений:', err));
 
     // Загрузка последних кандидатов
     fetch('/api/candidates/?limit=5')
@@ -115,6 +131,23 @@ const Dashboard: React.FC = () => {
               <p className="text-add text-background-2">Отклонённые</p>
               <p className="text-subheaders text-background font-bold">
                 {(metrics?.total_candidates || 0) - (metrics?.passed_candidates || 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Bell className="h-8 w-8 text-accent" />
+            </div>
+            <div className="ml-4">
+              <p className="text-add text-background-2">Уведомления</p>
+              <p className="text-subheaders text-background font-bold">
+                {notificationStats?.total || 0}
+              </p>
+              <p className="text-xs text-green-600">
+                {notificationStats?.success_rate?.toFixed(1) || 0}% успешно
               </p>
             </div>
           </div>

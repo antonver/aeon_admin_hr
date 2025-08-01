@@ -1,0 +1,81 @@
+/* Mobile Navigation Styles */
+
+/* Bottom Navigation */
+.bottom-nav {
+  background: white;
+  border-top: 1px solid #e9ecef;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-nav .nav-link {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0 4px;
+}
+
+.bottom-nav .nav-link:hover {
+  background-color: #f8f9fa;
+}
+
+.bottom-nav .nav-link.active {
+  background-color: #f0f0ff;
+}
+
+/* Active indicator */
+.bottom-nav .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background-color: #6f42c1;
+  border-radius: 1px;
+}
+
+/* Mobile top bar */
+.mobile-top-bar {
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Content padding for mobile */
+.mobile-content {
+  padding-bottom: 80px;
+}
+
+/* Desktop content */
+@media (min-width: 768px) {
+  .mobile-content {
+    padding-bottom: 20px;
+  }
+}
+
+/* Icon styles */
+.nav-icon {
+  transition: transform 0.2s ease;
+}
+
+.nav-link:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+.nav-link.active .nav-icon {
+  transform: scale(1.1);
+}
+
+/* Text styles */
+.nav-text {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Safe area for devices with home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+} 

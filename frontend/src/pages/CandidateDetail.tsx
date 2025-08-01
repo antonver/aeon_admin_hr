@@ -37,6 +37,7 @@ const CandidateDetail: React.FC = () => {
   const [editing, setEditing] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [notificationLoading, setNotificationLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -109,6 +110,50 @@ const CandidateDetail: React.FC = () => {
     navigator.clipboard.writeText(data);
     setActionMessage('Данные скопированы в буфер обмена');
     setTimeout(() => setActionMessage(null), 3000);
+  };
+
+  const sendInterviewNotification = async () => {
+    if (!candidate) return;
+    setNotificationLoading(true);
+    try {
+      const response = await fetch(`/api/notifications/send-interview-notification/${candidate.id}`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        setActionMessage('Уведомление о начале интервью отправлено');
+        setTimeout(() => setActionMessage(null), 3000);
+      } else {
+        setActionMessage('Ошибка отправки уведомления');
+        setTimeout(() => setActionMessage(null), 3000);
+      }
+    } catch (error) {
+      setActionMessage('Ошибка отправки уведомления');
+      setTimeout(() => setActionMessage(null), 3000);
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
+  const sendTestNotification = async () => {
+    if (!candidate) return;
+    setNotificationLoading(true);
+    try {
+      const response = await fetch(`/api/candidates/${candidate.id}/test-notification`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        setActionMessage('Тестовое уведомление отправлено');
+        setTimeout(() => setActionMessage(null), 3000);
+      } else {
+        setActionMessage('Ошибка отправки тестового уведомления');
+        setTimeout(() => setActionMessage(null), 3000);
+      }
+    } catch (error) {
+      setActionMessage('Ошибка отправки тестового уведомления');
+      setTimeout(() => setActionMessage(null), 3000);
+    } finally {
+      setNotificationLoading(false);
+    }
   };
 
   const handleEditChange = (field: keyof Candidate, value: string) => {
@@ -273,6 +318,28 @@ const CandidateDetail: React.FC = () => {
 
         {/* Боковая панель */}
         <div className="space-y-6">
+          {/* Уведомления */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Уведомления</h2>
+            <div className="space-y-3">
+              <button
+                onClick={sendInterviewNotification}
+                disabled={notificationLoading}
+                className="btn btn-primary w-full flex items-center justify-center space-x-2"
+              >
+                <span>🎬</span>
+                <span>Начало интервью</span>
+              </button>
+              <button
+                onClick={sendTestNotification}
+                disabled={notificationLoading}
+                className="btn btn-secondary w-full flex items-center justify-center space-x-2"
+              >
+                <span>🧪</span>
+                <span>Тестовое уведомление</span>
+              </button>
+            </div>
+          </div>
 
 
           {/* Комментарии HR */}

@@ -125,4 +125,16 @@ class TelegramAuthRequest(BaseModel):
     init_data: str
 
 class AdminCreateRequest(BaseModel):
+    telegram_username: str
+
+class PendingAdmin(BaseModel):
+    id: int
+    telegram_username: str
+    created_by: Optional[int] = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PendingAdminCreate(BaseModel):
     telegram_username: str 

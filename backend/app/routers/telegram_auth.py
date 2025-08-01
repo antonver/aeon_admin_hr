@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
-from app.database import get_db, User
-from app.models import TelegramAuthRequest, UserProfile
+from app.database import get_db, User, PendingAdmin
+from app.models import TelegramAuthRequest, UserProfile, PendingAdmin as PendingAdminModel
 from typing import Optional
 import jwt
 import os
@@ -147,6 +147,13 @@ async def telegram_auth(
             # Проверяем, есть ли админы в системе
             total_admins = db.query(User).filter(User.is_admin == True).count()
             
+            # Проверяем, есть ли пользователь в списке ожидающих админов
+            pending_admin = None
+            if username:
+                pending_admin = db.query(PendingAdmin).filter(
+                    PendingAdmin.telegram_username == username
+                ).first()
+            
             if total_admins == 0:
                 # Если нет админов, создаем первого админа
                 user = User(
@@ -156,8 +163,19 @@ async def telegram_auth(
                     is_admin=True
                 )
                 logging.info(f"Создан первый администратор: {user.name} (ID: {user.id})")
+            elif pending_admin:
+                # Если пользователь в списке ожидающих админов, создаем его как админа
+                user = User(
+                    name=f"{first_name} {last_name}".strip(),
+                    telegram_id=str(telegram_id),
+                    telegram_username=username,
+                    is_admin=True
+                )
+                # Удаляем из списка ожидающих
+                db.delete(pending_admin)
+                logging.info(f"Создан администратор из списка ожидающих: {user.name} (ID: {user.id})")
             else:
-                # Если админы есть, создаем обычного пользователя
+                # Если админы есть, но пользователь не в списке ожидающих, создаем обычного пользователя
                 user = User(
                     name=f"{first_name} {last_name}".strip(),
                     telegram_id=str(telegram_id),
@@ -173,6 +191,19 @@ async def telegram_auth(
             # Обновляем данные существующего пользователя
             user.name = f"{first_name} {last_name}".strip()
             user.telegram_username = username
+            
+            # Проверяем, есть ли пользователь в списке ожидающих админов
+            if username:
+                pending_admin = db.query(PendingAdmin).filter(
+                    PendingAdmin.telegram_username == username
+                ).first()
+                
+                if pending_admin and not user.is_admin:
+                    # Если пользователь в списке ожидающих, делаем его админом
+                    user.is_admin = True
+                    db.delete(pending_admin)
+                    logging.info(f"Пользователь {user.name} назначен администратором из списка ожидающих")
+            
             db.commit()
             db.refresh(user)
             logging.info(f"Обновлен пользователь: {user.name} (ID: {user.id})")
@@ -236,31 +267,63 @@ async def create_admin(
     if not telegram_username:
         raise HTTPException(status_code=400, detail="Необходимо указать telegram_username")
     
-    # Ищем пользователя по username
-    user = db.query(User).filter(User.telegram_username == telegram_username).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Пользователь с таким username не найден")
+    # Убираем @ если пользователь его добавил
+    telegram_username = telegram_username.lstrip('@')
     
-    if user.is_admin:
-        raise HTTPException(status_code=400, detail="Пользователь уже является администратором")
+    # Проверяем, не добавлен ли уже этот username в pending_admins
+    existing_pending = db.query(PendingAdmin).filter(
+        PendingAdmin.telegram_username == telegram_username
+    ).first()
     
-    user.is_admin = True
-    db.commit()
-    db.refresh(user)
+    if existing_pending:
+        raise HTTPException(status_code=400, detail="Пользователь уже добавлен в список ожидающих администраторов")
     
-    logging.info(f"Пользователь {user.name} ({user.telegram_username}) назначен администратором")
+    # Ищем существующего пользователя
+    existing_user = db.query(User).filter(User.telegram_username == telegram_username).first()
     
-    return {
-        "message": "Администратор успешно создан",
-        "user": UserProfile(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            telegram_id=user.telegram_id,
-            telegram_username=user.telegram_username,
-            is_admin=user.is_admin
+    if existing_user:
+        if existing_user.is_admin:
+            raise HTTPException(status_code=400, detail="Пользователь уже является администратором")
+        
+        # Если пользователь существует, сразу делаем его админом
+        existing_user.is_admin = True
+        db.commit()
+        db.refresh(existing_user)
+        
+        logging.info(f"Пользователь {existing_user.name} ({existing_user.telegram_username}) назначен администратором")
+        
+        return {
+            "message": "Администратор успешно создан",
+            "user": UserProfile(
+                id=existing_user.id,
+                name=existing_user.name,
+                email=existing_user.email,
+                telegram_id=existing_user.telegram_id,
+                telegram_username=existing_user.telegram_username,
+                is_admin=existing_user.is_admin
+            )
+        }
+    else:
+        # Если пользователь не существует, добавляем в pending_admins
+        pending_admin = PendingAdmin(
+            telegram_username=telegram_username,
+            created_by=current_user.id
         )
-    }
+        db.add(pending_admin)
+        db.commit()
+        db.refresh(pending_admin)
+        
+        logging.info(f"Пользователь @{telegram_username} добавлен в список ожидающих администраторов")
+        
+        return {
+            "message": f"Пользователь @{telegram_username} добавлен в список ожидающих администраторов. Он станет администратором при первом входе в приложение.",
+            "pending_admin": PendingAdminModel(
+                id=pending_admin.id,
+                telegram_username=pending_admin.telegram_username,
+                created_by=pending_admin.created_by,
+                created_at=pending_admin.created_at
+            )
+        }
 
 @router.get("/admins")
 async def get_admins(
@@ -284,4 +347,53 @@ async def get_admins(
                 is_admin=admin.is_admin
             ) for admin in admins
         ]
-    } 
+    }
+
+@router.get("/pending-admins")
+async def get_pending_admins(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+):
+    """Получить список ожидающих администраторов (только для админов)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Недостаточно прав")
+    
+    pending_admins = db.query(PendingAdmin).all()
+    
+    return {
+        "pending_admins": [
+            PendingAdminModel(
+                id=pending.id,
+                telegram_username=pending.telegram_username,
+                created_by=pending.created_by,
+                created_at=pending.created_at
+            ) for pending in pending_admins
+        ]
+    }
+
+@router.delete("/pending-admins/{username}")
+async def remove_pending_admin(
+    username: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token)
+):
+    """Удалить пользователя из списка ожидающих администраторов (только для админов)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Недостаточно прав")
+    
+    # Убираем @ если пользователь его добавил
+    username = username.lstrip('@')
+    
+    pending_admin = db.query(PendingAdmin).filter(
+        PendingAdmin.telegram_username == username
+    ).first()
+    
+    if not pending_admin:
+        raise HTTPException(status_code=404, detail="Пользователь не найден в списке ожидающих администраторов")
+    
+    db.delete(pending_admin)
+    db.commit()
+    
+    logging.info(f"Пользователь @{username} удален из списка ожидающих администраторов")
+    
+    return {"message": f"Пользователь @{username} удален из списка ожидающих администраторов"} 

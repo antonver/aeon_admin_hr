@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime
 
@@ -135,10 +136,42 @@ async def create_interview_log(
     db: Session = Depends(get_db)
 ):
     """Создать лог интервью"""
+    # Получаем кандидата
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Кандидат не найден")
+    
+    # Создаем лог интервью
     db_log = InterviewLog(**log.dict())
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
+    
+    # Отправляем уведомление администраторам
+    telegram_service = TelegramService()
+    await telegram_service.send_interview_notification_to_admins(candidate, db_log, db)
+    
+    # Проверяем, завершено ли интервью (например, если это последний вопрос)
+    # Здесь можно добавить логику определения завершения интервью
+    interview_logs_count = db.query(InterviewLog).filter(InterviewLog.candidate_id == candidate_id).count()
+    
+    # Если это 5-й вопрос или больше, считаем интервью завершенным
+    if interview_logs_count >= 5:
+        # Вычисляем среднюю оценку
+        avg_score = db.query(func.avg(InterviewLog.score)).filter(
+            InterviewLog.candidate_id == candidate_id,
+            InterviewLog.score.isnot(None)
+        ).scalar() or 0.0
+        
+        # Отправляем уведомление о завершении
+        await telegram_service.send_interview_completion_notification(candidate, interview_logs_count, avg_score, db)
+        
+        # Обновляем статус кандидата
+        candidate.status = "прошёл" if avg_score >= 7.0 else "ожидает"
+        candidate.last_action_type = "interview_completed"
+        candidate.last_action_date = datetime.utcnow()
+        db.commit()
+    
     return db_log
 
 # Комментарии HR
@@ -224,4 +257,98 @@ async def send_candidate_data(
     if ok:
         return {"message": "Данные отправлены кандидату в Telegram"}
     else:
-        raise HTTPException(status_code=500, detail=f"Ошибка отправки данных в Telegram /{format}/") 
+        raise HTTPException(status_code=500, detail=f"Ошибка отправки данных в Telegram /{format}/")
+
+@router.post("/{candidate_id}/test-notification")
+async def test_notification(
+    candidate_id: int,
+    db: Session = Depends(get_db)
+):
+    """Тестирование уведомлений для администраторов"""
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Кандидат не найден")
+    
+    telegram_service = TelegramService()
+    
+    # Создаем тестовый лог интервью
+    test_log = InterviewLog(
+        candidate_id=candidate_id,
+        question="Тестовый вопрос для проверки уведомлений",
+        answer="Тестовый ответ кандидата",
+        score=8,
+        category="тестирование"
+    )
+    
+    # Отправляем тестовое уведомление
+    success = await telegram_service.send_interview_notification_to_admins(candidate, test_log, db)
+    
+    if success:
+        return {"message": "Тестовое уведомление отправлено администраторам"}
+    else:
+        raise HTTPException(status_code=500, detail="Ошибка отправки тестового уведомления")
+
+@router.post("/results")
+async def submit_interview_results(
+    results: dict,
+    db: Session = Depends(get_db)
+):
+    """Получить результаты интервью от внешнего сайта"""
+    try:
+        # Извлекаем данные из результатов
+        full_name = results.get("full_name", "Неизвестный кандидат")
+        telegram_username = results.get("telegram_username")
+        telegram_id = results.get("telegram_id")
+        interview_results = results.get("results", "")
+        
+        # Создаем нового кандидата
+        candidate_data = {
+            "full_name": full_name,
+            "telegram_username": telegram_username,
+            "telegram_id": telegram_id,
+            "results": interview_results
+        }
+        
+        db_candidate = Candidate(**candidate_data)
+        db.add(db_candidate)
+        db.commit()
+        db.refresh(db_candidate)
+        
+        # Интеграция с Notion
+        notion_service = NotionService()
+        notion_id = await notion_service.create_candidate(db_candidate)
+        db_candidate.notion_id = notion_id
+        db.commit()
+        
+        # Отправляем уведомление администраторам
+        telegram_service = TelegramService()
+        await telegram_service.send_interview_completion_notification(db_candidate, 1, 0.0, db)
+        
+        return {
+            "success": True,
+            "message": "Результаты интервью успешно сохранены",
+            "candidate_id": db_candidate.id
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Ошибка сохранения результатов: {str(e)}")
+
+@router.get("/results/{candidate_id}")
+async def get_interview_results(
+    candidate_id: int,
+    db: Session = Depends(get_db)
+):
+    """Получить результаты интервью кандидата"""
+    candidate = db.query(Candidate).filter(Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Кандидат не найден")
+    
+    return {
+        "id": candidate.id,
+        "full_name": candidate.full_name,
+        "telegram_username": candidate.telegram_username,
+        "results": candidate.results,
+        "status": candidate.status,
+        "created_at": candidate.created_at.isoformat() if candidate.created_at else None
+    } 

@@ -5,10 +5,13 @@ import {
   BarChart3, 
   Home, 
   User,
-  Shield
+  Shield,
+  Bell
 } from 'lucide-react';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
+import BottomNavigation from './BottomNavigation';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/mobile-navigation.css';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
 
   // --- Получить профиль пользователя ---
   const fetchProfile = async () => {
@@ -116,6 +119,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Дашборд', href: '/', icon: Home },
     { name: 'Кандидаты', href: '/candidates', icon: Users },
     { name: 'Метрики', href: '/metrics', icon: BarChart3 },
+    { name: 'Уведомления', href: '/notifications', icon: Bell },
   ];
 
   // Добавляем пункт управления админами только для админов
@@ -137,27 +141,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="container-fluid p-0 h-100">
-      {/* Bootstrap Navbar for mobile */}
-      <nav className="navbar navbar-expand-md navbar-light bg-light d-md-none">
+      {/* Top Bar for mobile */}
+      <nav className="navbar navbar-light mobile-top-bar d-md-none">
         <div className="container-fluid">
-          <button className="navbar-toggler" type="button" onClick={() => setSidebarOpen(true)}>
-            <span className="navbar-toggler-icon"></span>
-          </button>
           <span className="navbar-brand">HR Admin</span>
+          <div className="d-flex align-items-center gap-2">
+            <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
+              <span className="text-white fw-bold">HR</span>
+            </div>
+            <div>
+              <div className="fw-medium small">{user?.name || profileData.name}</div>
+              <div className="text-muted small">
+                {user?.telegram_username ? `@${user.telegram_username}` : profileData.email}
+                {user?.is_admin && (
+                  <span className="badge bg-success ms-1">Админ</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </nav>
-      {/* Sidebar as offcanvas on mobile, static on desktop */}
+      
+      {/* Layout for desktop and mobile */}
       <div className="row g-0 h-100 flex-nowrap">
-        {/* Offcanvas Sidebar for mobile */}
-        <div className={`offcanvas offcanvas-start d-md-none ${sidebarOpen ? 'show' : ''}`} tabIndex={-1} style={{visibility: sidebarOpen ? 'visible' : 'hidden'}}>
-          <div className="offcanvas-header">
-            <h5 className="offcanvas-title">Меню</h5>
-            <button type="button" className="btn-close text-reset" onClick={() => setSidebarOpen(false)}></button>
-          </div>
-          <div className="offcanvas-body p-0">
-            {renderSidebar(true)}
-          </div>
-        </div>
         {/* Static Sidebar for md+ */}
         <aside className="col-md-3 col-lg-2 d-none d-md-flex flex-column bg-light p-0 border-end" style={{minHeight: '100vh', height: '100vh', position: 'relative'}}>
           <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
@@ -180,8 +186,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {renderSidebar(false, true)}
           </div>
         </aside>
+        
         {/* Main Content */}
-        <main className="col-12 col-md-9 col-lg-10 px-3 py-4" style={{minHeight: '100vh'}}>
+        <main className={`${user ? 'col-12 col-md-9 col-lg-10' : 'col-12'} px-3 py-4 mobile-content`} style={{
+          minHeight: '100vh'
+        }}>
           {/* Top Bar */}
           <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 gap-3">
             <div>
@@ -230,6 +239,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
+
+      {/* Bottom Navigation for mobile */}
+      {user && (
+        <BottomNavigation navigation={navigation} />
+      )}
 
       {/* Модальное окно профиля */}
       {showProfileModal && (
@@ -360,7 +374,6 @@ function renderSidebar(showProfileSection = true, onlyProfileSection = false) {
               <Link
                 to={item.href}
                 className={`nav-link d-flex align-items-center gap-2 ${isActive ? 'active fw-bold text-primary' : ''}`}
-                onClick={() => setSidebarOpen(false)}
               >
                 <item.icon />
                 {item.name}

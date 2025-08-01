@@ -10,9 +10,17 @@ interface Admin {
   is_admin: boolean;
 }
 
+interface PendingAdmin {
+  id: number;
+  telegram_username: string;
+  created_by?: number;
+  created_at: string;
+}
+
 const Admins: React.FC = () => {
   const { user, token } = useTelegramAuth();
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [pendingAdmins, setPendingAdmins] = useState<PendingAdmin[]>([]);
   const [loading, setLoading] = useState(false);
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -42,6 +50,27 @@ const Admins: React.FC = () => {
     }
   };
 
+  const fetchPendingAdmins = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch('/api/telegram/pending-admins', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingAdmins(data.pending_admins);
+      } else {
+        console.error('Ошибка загрузки списка ожидающих администраторов');
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки списка ожидающих администраторов');
+    }
+  };
+
   const createAdmin = async () => {
     if (!token || !newAdminUsername.trim()) return;
 
@@ -63,9 +92,14 @@ const Admins: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setMessage(`Администратор ${data.user.name} (@${data.user.telegram_username}) успешно создан`);
+        if (data.user) {
+          setMessage(`Администратор ${data.user.name} (@${data.user.telegram_username}) успешно создан`);
+        } else if (data.pending_admin) {
+          setMessage(`Пользователь @${data.pending_admin.telegram_username} добавлен в список ожидающих администраторов. Он станет администратором при первом входе в приложение.`);
+        }
         setNewAdminUsername('');
         fetchAdmins(); // Обновляем список
+        fetchPendingAdmins(); // Обновляем список ожидающих
       } else {
         const errorData = await response.json();
         setError(errorData.detail || 'Ошибка создания администратора');
@@ -77,8 +111,32 @@ const Admins: React.FC = () => {
     }
   };
 
+  const removePendingAdmin = async (username: string) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`/api/telegram/pending-admins/${username}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setMessage(`Пользователь @${username} удален из списка ожидающих администраторов`);
+        fetchPendingAdmins(); // Обновляем список
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Ошибка удаления из списка ожидающих');
+      }
+    } catch (err) {
+      setError('Ошибка удаления из списка ожидающих');
+    }
+  };
+
   useEffect(() => {
     fetchAdmins();
+    fetchPendingAdmins();
   }, [token]);
 
   // Проверяем права доступа
@@ -166,6 +224,59 @@ const Admins: React.FC = () => {
                     className="btn-close"
                     onClick={() => setError(null)}
                   ></button>
+                </div>
+              )}
+
+              {/* Список ожидающих администраторов */}
+              {pendingAdmins.length > 0 && (
+                <div className="row mb-4">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="card-title mb-0">Ожидающие администраторы</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-info">
+                          <i className="fas fa-info-circle me-2"></i>
+                          Эти пользователи будут назначены администраторами при первом входе в приложение
+                        </div>
+                        <div className="table-responsive">
+                          <table className="table table-sm">
+                            <thead>
+                              <tr>
+                                <th>Username</th>
+                                <th>Добавлен</th>
+                                <th>Действия</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {pendingAdmins.map((pending) => (
+                                <tr key={pending.id}>
+                                  <td>
+                                    <span className="badge bg-warning text-dark">
+                                      @{pending.telegram_username}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {new Date(pending.created_at).toLocaleDateString('ru-RU')}
+                                  </td>
+                                  <td>
+                                    <button
+                                      className="btn btn-sm btn-outline-danger"
+                                      onClick={() => removePendingAdmin(pending.telegram_username)}
+                                      title="Удалить из списка ожидающих"
+                                    >
+                                      <i className="fas fa-trash"></i> Удалить
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

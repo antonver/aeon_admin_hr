@@ -92,4 +92,15 @@ class User(Base):
     telegram_username = Column(String, nullable=True)
     is_admin = Column(Boolean, default=False)  # флаг администратора
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) 
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class PendingAdmin(Base):
+    __tablename__ = "pending_admins"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    telegram_username = Column(String, unique=True, nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # кто добавил
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Отношение к пользователю, который добавил
+    created_by_user = relationship("User") 
