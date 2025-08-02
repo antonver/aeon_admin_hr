@@ -56,10 +56,6 @@ app.add_middleware(
         "https://0.0.0.0:3001", 
         "https://0.0.0.0:8000",
         "https://0.0.0.0:8001",
-        "https://*.railway.app",  # Railway домены
-        "https://*.vercel.app",   # Vercel домены
-        "https://*.herokuapp.com", # Heroku домены
-        "https://*.netlify.app",   # Netlify домены
         "*"  # Разрешаем все источники
     ],
     allow_credentials=True,
@@ -144,23 +140,38 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
-    return FileResponse("static/index.html")
+    try:
+        return FileResponse("static/index.html")
+    except FileNotFoundError:
+        return {"message": "HR Admin Panel Backend API", "frontend": "not built"}
 
 @app.get("/manifest.json")
 async def manifest():
-    return FileResponse("static/manifest.json")
+    try:
+        return FileResponse("static/manifest.json")
+    except FileNotFoundError:
+        return {"message": "Manifest not found"}
 
 @app.get("/test-telegram")
 async def test_telegram():
-    return FileResponse("static/test-telegram.html")
+    try:
+        return FileResponse("static/test-telegram.html")
+    except FileNotFoundError:
+        return {"message": "Test page not found"}
 
 @app.get("/test-external-api")
 async def test_external_api():
-    return FileResponse("static/test-external-api.html")
+    try:
+        return FileResponse("static/test-external-api.html")
+    except FileNotFoundError:
+        return {"message": "Test page not found"}
 
 @app.get("/debug")
 async def debug():
-    return FileResponse("static/debug.html")
+    try:
+        return FileResponse("static/debug.html")
+    except FileNotFoundError:
+        return {"message": "Debug page not found"}
 
 @app.get("/health")
 async def health_check():
@@ -187,7 +198,10 @@ async def catch_all(full_path: str):
         raise HTTPException(status_code=404, detail="API endpoint not found")
     
     # Для всех остальных путей возвращаем index.html
-    return FileResponse("static/index.html")
+    try:
+        return FileResponse("static/index.html")
+    except FileNotFoundError:
+        return {"message": "Frontend not built", "api_docs": "/docs"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 

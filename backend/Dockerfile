@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -15,11 +15,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копируем код приложения
 COPY . .
 
+# Создаем директорию для статических файлов
+RUN mkdir -p static
+
 # Создаем пользователя для безопасности
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Открываем порт
+# Открываем порт (Render будет использовать переменную $PORT)
 EXPOSE 8000
 
 # Команда для запуска
