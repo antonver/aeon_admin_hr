@@ -28,7 +28,10 @@ services:
         sync: false
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: PORT
+        value: 8000
     healthCheckPath: /health
+    autoDeploy: true
 
   # Фронтенд React
   - type: web
@@ -41,4 +44,5 @@ services:
       - key: REACT_APP_API_URL
         value: https://hr-admin-backend.onrender.com
       - key: REACT_APP_TELEGRAM_BOT_USERNAME
-        sync: false 
+        sync: false
+    autoDeploy: true 
