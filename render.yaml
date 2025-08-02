@@ -32,8 +32,9 @@ services:
         value: 8000
     healthCheckPath: /health
     autoDeploy: true
+    branch: main
 
-  # Фронтенд React
+  # Фронтенд React (опционально, можно развернуть отдельно)
   - type: web
     name: hr-admin-frontend
     env: static
@@ -45,4 +46,5 @@ services:
         value: https://hr-admin-backend.onrender.com
       - key: REACT_APP_TELEGRAM_BOT_USERNAME
         sync: false
-    autoDeploy: true 
+    autoDeploy: true
+    branch: main 
