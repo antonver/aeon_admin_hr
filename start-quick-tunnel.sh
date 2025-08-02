@@ -1,47 +1,31 @@
 #!/bin/bash
 
-echo "🚀 Запуск быстрого Cloudflare туннеля..."
+# Скрипт для запуска приложения с быстрым Cloudflare Tunnel
 
-# Проверяем, что backend работает
-echo "📡 Проверка backend..."
-if ! curl -s http://localhost:8001/api/health > /dev/null; then
-    echo "❌ Backend не работает на порту 8001"
-    echo "Запустите сначала: ./start-backend.sh"
+echo "🚀 Запуск приложения с быстрым Cloudflare Tunnel..."
+
+# Проверяем, установлен ли cloudflared
+if ! command -v cloudflared &> /dev/null; then
+    echo "❌ cloudflared не установлен. Установите его с https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
     exit 1
 fi
 
-echo "✅ Backend работает"
+# Запускаем backend
+echo "📦 Запуск backend..."
+cd backend
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload &
+BACKEND_PID=$!
 
-# Запускаем туннель с подробным выводом
-echo "🌐 Создание Cloudflare туннеля..."
-echo "Это может занять 1-2 минуты..."
+# Ждем немного, чтобы backend запустился
+sleep 3
 
-# Запускаем туннель и сохраняем вывод
-cloudflared tunnel --url http://localhost:8001 2>&1 | tee tunnel-output.log &
+# Запускаем быстрый Cloudflare Tunnel
+echo "🌐 Запуск быстрого Cloudflare Tunnel..."
+echo "📱 Приложение будет доступно по URL, который покажет Cloudflare Tunnel"
+echo ""
 
-# Ждем и ищем URL в выводе
-echo "⏳ Ожидание создания туннеля..."
-for i in {1..30}; do
-    if grep -q "https://.*trycloudflare.com" tunnel-output.log; then
-        echo ""
-        echo "🎉 Туннель создан!"
-        echo "📱 Публичная ссылка:"
-        grep "https://.*trycloudflare.com" tunnel-output.log | tail -1
-        echo ""
-        echo "🔗 Приложение доступно по ссылке выше"
-        echo "🛑 Для остановки нажмите Ctrl+C"
-        break
-    fi
-    echo -n "."
-    sleep 2
-done
+# Запускаем туннель напрямую к порту 8001
+cloudflared tunnel --url http://localhost:8001
 
-if ! grep -q "https://.*trycloudflare.com" tunnel-output.log; then
-    echo ""
-    echo "❌ Не удалось создать туннель за 60 секунд"
-    echo "Проверьте логи в файле tunnel-output.log"
-    exit 1
-fi
-
-# Ждем завершения
-wait 
+# Очистка при завершении
+trap "kill $BACKEND_PID 2>/dev/null" EXIT 

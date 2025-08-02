@@ -1,12 +1,12 @@
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
 # Копирование файлов зависимостей
 COPY package*.json ./
 
-# Установка зависимостей
-RUN npm ci --only=production
+# Установка всех зависимостей (включая devDependencies для сборки)
+RUN npm ci
 
 # Копирование исходного кода
 COPY . .
@@ -14,8 +14,16 @@ COPY . .
 # Сборка приложения
 RUN npm run build
 
-# Установка serve для продакшена
+# Продакшен образ
+FROM node:18-alpine AS production
+
+WORKDIR /app
+
+# Установка serve глобально
 RUN npm install -g serve
+
+# Копирование собранного приложения из builder
+COPY --from=builder /app/build ./build
 
 # Открытие порта
 EXPOSE 3000

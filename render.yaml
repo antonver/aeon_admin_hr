@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: hr-admin-backend
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      cd frontend && npm install && npm run build
+    startCommand: |
+      python backend/init_heroku_db.py &&
+      python backend/seed_test_data.py &&
+      uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BOT_TOKEN
+        value: ""
+    healthCheckPath: /api/health
+
+databases:
+  - name: hr-admin-db
+    databaseName: hr_admin
+    user: hr_admin_user
+    plan: free 

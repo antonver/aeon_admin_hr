@@ -56,6 +56,10 @@ app.add_middleware(
         "https://0.0.0.0:3001", 
         "https://0.0.0.0:8000",
         "https://0.0.0.0:8001",
+        "https://*.railway.app",  # Railway домены
+        "https://*.vercel.app",   # Vercel домены
+        "https://*.herokuapp.com", # Heroku домены
+        "https://*.netlify.app",   # Netlify домены
         "*"  # Разрешаем все источники
     ],
     allow_credentials=True,
