@@ -19,6 +19,10 @@ if [ -d "frontend/build" ]; then
     echo "📋 Копируем новые статические файлы..."
     cp -r frontend/build/* backend/static/
     echo "✅ Статические файлы обновлены"
+    echo "📁 Проверяем структуру файлов:"
+    ls -la backend/static/
+    ls -la backend/static/static/js/ 2>/dev/null || echo "⚠️  JS файлы не найдены"
+    ls -la backend/static/static/css/ 2>/dev/null || echo "⚠️  CSS файлы не найдены"
 else
     echo "⚠️  Директория frontend/build не найдена"
     mkdir -p backend/static
