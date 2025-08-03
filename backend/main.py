@@ -136,7 +136,22 @@ app.include_router(telegram_auth.router, prefix="/api/telegram", tags=["telegram
 app.include_router(admins.router, prefix="/api", tags=["admins"])
 app.include_router(external_api.router, prefix="/api/external", tags=["external"])
 
-# Подключаем статические файлы
+# Подключаем статические файлы с отключением кэширования
+from fastapi.responses import Response
+from fastapi import Request
+
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Отключаем кэширование для статических файлов
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    
+    return response
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")

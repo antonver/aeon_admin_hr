@@ -6,12 +6,24 @@ services:
     plan: free
     ipAllowList: []
 
-  # Бэкенд API
+  # Бэкенд API с фронтендом
   - type: web
     name: hr-admin-backend
     env: python
     plan: free
-    buildCommand: ./build.sh
+    buildCommand: |
+      # Устанавливаем Node.js для сборки фронтенда
+      curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      apt-get install -y nodejs
+      
+      # Собираем фронтенд
+      cd frontend
+      npm install
+      npm run build
+      cd ..
+      
+      # Запускаем основной build скрипт
+      ./build.sh
     startCommand: ./start-gunicorn.sh
     envVars:
       - key: DATABASE_URL
@@ -34,17 +46,4 @@ services:
     autoDeploy: true
     branch: main
 
-  # Фронтенд React (опционально, можно развернуть отдельно)
-  - type: web
-    name: hr-admin-frontend
-    env: static
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/build
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://hr-admin-backend.onrender.com
-      - key: REACT_APP_TELEGRAM_BOT_USERNAME
-        sync: false
-    autoDeploy: true
-    branch: main 
+ 
