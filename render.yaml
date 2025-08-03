@@ -12,15 +12,8 @@ services:
     env: python
     plan: free
     buildCommand: |
-      # Устанавливаем Node.js для сборки фронтенда
-      curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-      apt-get install -y nodejs
-      
-      # Собираем фронтенд
-      cd frontend
-      npm install
-      npm run build
-      cd ..
+      # Запускаем pre-build скрипт
+      ./pre-build.sh
       
       # Запускаем основной build скрипт
       ./build.sh

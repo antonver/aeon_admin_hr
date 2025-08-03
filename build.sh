@@ -23,6 +23,22 @@ if [ -d "frontend/build" ]; then
     ls -la backend/static/
     ls -la backend/static/static/js/ 2>/dev/null || echo "⚠️  JS файлы не найдены"
     ls -la backend/static/static/css/ 2>/dev/null || echo "⚠️  CSS файлы не найдены"
+    
+    # Проверяем что index.html содержит правильные пути
+    echo "📄 Проверяем index.html..."
+    if grep -q "main.f8b9cbc8.js" backend/static/index.html; then
+        echo "✅ JS файл найден в index.html"
+    else
+        echo "❌ JS файл не найден в index.html"
+        cat backend/static/index.html | grep -o 'main\.[^"]*\.js'
+    fi
+    
+    if grep -q "main.16434665.css" backend/static/index.html; then
+        echo "✅ CSS файл найден в index.html"
+    else
+        echo "❌ CSS файл не найден в index.html"
+        cat backend/static/index.html | grep -o 'main\.[^"]*\.css'
+    fi
 else
     echo "⚠️  Директория frontend/build не найдена"
     mkdir -p backend/static
