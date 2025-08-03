@@ -2,7 +2,7 @@ import os
 from notion_client import Client
 from notion_client.errors import APIResponseError
 from dotenv import load_dotenv
-from app.database import Candidate, Notification
+from backend.app.database import Candidate, Notification
 from datetime import datetime
 
 load_dotenv()

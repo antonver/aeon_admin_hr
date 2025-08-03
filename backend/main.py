@@ -7,7 +7,7 @@ import uvicorn
 from dotenv import load_dotenv
 import os
 
-# Импорты для работы с Render
+# Импорты для работы с Render - используем относительные импорты
 from app.database import engine, Base
 from app.routers import candidates, notifications, metrics, user, telegram_auth, admins, external_api
 from app.services.telegram_service import TelegramService

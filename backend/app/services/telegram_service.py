@@ -4,7 +4,7 @@ import asyncio
 from telegram import Bot
 from telegram.error import TelegramError
 from dotenv import load_dotenv
-from app.database import Candidate, Notification, User
+from backend.app.database import Candidate, Notification, User
 from sqlalchemy.orm import Session
 
 load_dotenv()

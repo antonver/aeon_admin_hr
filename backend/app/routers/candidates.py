@@ -4,15 +4,15 @@ from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime
 
-from app.database import get_db, Candidate, InterviewLog, Comment
-from app.models import (
+from backend.app.database import get_db, Candidate, InterviewLog, Comment
+from backend.app.models import (
     CandidateCreate, CandidateUpdate, Candidate as CandidateModel,
     InterviewLogCreate, InterviewLog as InterviewLogModel,
     CommentCreate, Comment as CommentModel,
     CandidateFilter, QuickAction
 )
-from app.services.telegram_service import TelegramService
-from app.services.notion_service import NotionService
+from backend.app.services.telegram_service import TelegramService
+from backend.app.services.notion_service import NotionService
 
 router = APIRouter()
 

@@ -4,8 +4,8 @@ from sqlalchemy import func, desc
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from app.database import get_db, Candidate, InterviewLog
-from app.models import Metrics
+from backend.app.database import get_db, Candidate, InterviewLog
+from backend.app.models import Metrics
 
 router = APIRouter()
 

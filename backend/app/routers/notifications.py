@@ -4,10 +4,10 @@ from sqlalchemy import func
 from typing import List
 from datetime import datetime
 
-from app.database import get_db, Notification, Candidate
-from app.models import NotificationCreate, Notification as NotificationModel
-from app.services.telegram_service import TelegramService
-from app.services.notion_service import NotionService
+from backend.app.database import get_db, Notification, Candidate
+from backend.app.models import NotificationCreate, Notification as NotificationModel
+from backend.app.services.telegram_service import TelegramService
+from backend.app.services.notion_service import NotionService
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
-from app.database import get_db, User, PendingAdmin
-from app.models import TelegramAuthRequest, UserProfile, PendingAdmin as PendingAdminModel
+from backend.app.database import get_db, User, PendingAdmin
+from backend.app.models import TelegramAuthRequest, UserProfile, PendingAdmin as PendingAdminModel
 from typing import Optional
 import jwt
 import os

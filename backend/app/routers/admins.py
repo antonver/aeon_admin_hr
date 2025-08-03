@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db, User
-from app.models import UserProfile, AdminCreateRequest
-from app.routers.telegram_auth import get_current_user_from_token
+from backend.app.database import get_db, User
+from backend.app.models import UserProfile, AdminCreateRequest
+from backend.app.routers.telegram_auth import get_current_user_from_token
 from typing import List
 import logging
 

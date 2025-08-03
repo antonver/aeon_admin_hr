@@ -1,4 +1,4 @@
-from app.database import SessionLocal, User
+from backend.app.database import SessionLocal, User
 
 def show_users():
     db = SessionLocal()
