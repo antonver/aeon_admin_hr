@@ -12,7 +12,7 @@ services:
     env: python
     plan: free
     buildCommand: ./build.sh
-    startCommand: ./start.sh
+    startCommand: ./start-gunicorn.sh
     envVars:
       - key: DATABASE_URL
         fromDatabase:
