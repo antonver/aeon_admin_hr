@@ -2,7 +2,7 @@ import os
 from notion_client import Client
 from notion_client.errors import APIResponseError
 from dotenv import load_dotenv
-from backend.app.database import Candidate, Notification
+from backend.app.database import Candidate
 from datetime import datetime
 
 load_dotenv()
@@ -184,62 +184,7 @@ class NotionService:
             print(f"Ошибка создания задачи в Notion: {e}")
             return False
     
-    async def create_notification_task(self, notification: Notification):
-        """Создать задачу на основе уведомления"""
-        if not self.client:
-            return False
-        
-        try:
-            task_database_id = os.getenv("NOTION_TASKS_DATABASE_ID")
-            if not task_database_id:
-                return False
-            
-            properties = {
-                "Название": {
-                    "title": [
-                        {
-                            "text": {
-                                "content": f"Уведомление: {notification.type}"
-                            }
-                        }
-                    ]
-                },
-                "Тип": {
-                    "select": {
-                        "name": "Уведомление"
-                    }
-                },
-                "Сообщение": {
-                    "rich_text": [
-                        {
-                            "text": {
-                                "content": notification.message
-                            }
-                        }
-                    ]
-                },
-                "Статус": {
-                    "select": {
-                        "name": "К выполнению"
-                    }
-                },
-                "Дата создания": {
-                    "date": {
-                        "start": notification.created_at.isoformat()
-                    }
-                }
-            }
-            
-            self.client.pages.create(
-                parent={"database_id": task_database_id},
-                properties=properties
-            )
-            
-            return True
-            
-        except APIResponseError as e:
-            print(f"Ошибка создания задачи уведомления в Notion: {e}")
-            return False
+
     
     async def create_test_task(self):
         """Создать тестовую задачу"""

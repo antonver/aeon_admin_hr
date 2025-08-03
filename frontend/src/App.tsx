@@ -6,7 +6,7 @@ import CandidatesList from './pages/CandidatesList';
 import CandidateDetail from './pages/CandidateDetail';
 import Metrics from './pages/Metrics';
 import Admins from './pages/Admins';
-import Notifications from './pages/Notifications';
+
 import './styles/design-system.css';
 
 function App() {
@@ -38,11 +38,7 @@ function App() {
             <Admins />
           </Layout>
         } />
-        <Route path="/notifications" element={
-          <Layout>
-            <Notifications />
-          </Layout>
-        } />
+
       </Routes>
     </Router>
   );

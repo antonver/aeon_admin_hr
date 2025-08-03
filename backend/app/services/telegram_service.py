@@ -4,7 +4,7 @@ import asyncio
 from telegram import Bot
 from telegram.error import TelegramError
 from dotenv import load_dotenv
-from backend.app.database import Candidate, Notification, User
+from backend.app.database import Candidate, User
 from sqlalchemy.orm import Session
 
 load_dotenv()
@@ -32,26 +32,7 @@ class TelegramService:
             print(f"Ошибка отправки сообщения в Telegram: {e}")
             return False
     
-    async def send_notification(self, notification: Notification):
-        """Отправить уведомление HR-менеджеру"""
-        if not self.bot or not self.chat_id:
-            return False
-        
-        try:
-            message = f"🔔 <b>Уведомление</b>\n\n"
-            message += f"Тип: {notification.type}\n"
-            message += f"Сообщение: {notification.message}\n"
-            message += f"Время: {notification.created_at.strftime('%d.%m.%Y %H:%M')}"
-            
-            await self.bot.send_message(
-                chat_id=self.chat_id,
-                text=message,
-                parse_mode='HTML'
-            )
-            return True
-        except TelegramError as e:
-            print(f"Ошибка отправки уведомления в Telegram: {e}")
-            return False
+
     
     async def send_test_invitation(self, candidate: Candidate):
         """Отправить приглашение на тест"""

@@ -70,23 +70,7 @@ class Comment(CommentBase):
     class Config:
         from_attributes = True
 
-# Модели для уведомлений
-class NotificationBase(BaseModel):
-    type: str
-    message: str
 
-class NotificationCreate(NotificationBase):
-    candidate_id: int
-
-class Notification(NotificationBase):
-    id: int
-    candidate_id: int
-    telegram_sent: bool
-    notion_sent: bool
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 # Модели для метрик
 class Metrics(BaseModel):

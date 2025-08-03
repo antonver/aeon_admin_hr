@@ -43,7 +43,6 @@ class Candidate(Base):
     # Отношения
     interview_logs = relationship("InterviewLog", back_populates="candidate")
     comments = relationship("Comment", back_populates="candidate")
-    notifications = relationship("Notification", back_populates="candidate")
 
 class InterviewLog(Base):
     __tablename__ = "interview_logs"
@@ -68,18 +67,7 @@ class Comment(Base):
     
     candidate = relationship("Candidate", back_populates="comments")
 
-class Notification(Base):
-    __tablename__ = "notifications"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    candidate_id = Column(Integer, ForeignKey("candidates.id"))
-    type = Column(String, nullable=False)  # interview_completed, notion_updated, task_created
-    message = Column(Text, nullable=False)
-    telegram_sent = Column(Boolean, default=False)
-    notion_sent = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    candidate = relationship("Candidate", back_populates="notifications") 
+ 
 
 class User(Base):
     __tablename__ = "users"

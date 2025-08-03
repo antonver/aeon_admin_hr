@@ -9,7 +9,7 @@ import os
 
 # Импорты для работы с Render - используем относительные импорты
 from backend.app.database import engine, Base
-from backend.app.routers import candidates, notifications, metrics, user, telegram_auth, admins, external_api
+from backend.app.routers import candidates, metrics, user, telegram_auth, admins, external_api
 from backend.app.services.telegram_service import TelegramService
 from backend.app.services.notion_service import NotionService
 
@@ -129,7 +129,7 @@ app.add_middleware(
 
 # Подключаем роутеры
 app.include_router(candidates.router, prefix="/api/candidates", tags=["candidates"])
-app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
+
 app.include_router(metrics.router, prefix="/api/metrics", tags=["metrics"])
 app.include_router(user.router, prefix="/api/user", tags=["user"])
 app.include_router(telegram_auth.router, prefix="/api/telegram", tags=["telegram"])

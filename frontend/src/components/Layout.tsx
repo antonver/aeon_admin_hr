@@ -5,8 +5,7 @@ import {
   BarChart3, 
   Home, 
   User,
-  Shield,
-  Bell
+  Shield
 } from 'lucide-react';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
 import BottomNavigation from './BottomNavigation';
@@ -119,7 +118,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Дашборд', href: '/', icon: Home },
     { name: 'Кандидаты', href: '/candidates', icon: Users },
     { name: 'Метрики', href: '/metrics', icon: BarChart3 },
-    { name: 'Уведомления', href: '/notifications', icon: Bell },
   ];
 
   // Добавляем пункт управления админами только для админов
@@ -144,12 +142,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Top Bar for mobile */}
       <nav className="navbar navbar-light mobile-top-bar d-md-none">
         <div className="container-fluid">
-          <span className="navbar-brand">HR Admin</span>
+          <div className="d-flex align-items-center">
+            <span className="navbar-brand fw-bold">HR Admin</span>
+          </div>
           <div className="d-flex align-items-center gap-2">
-            <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
+            <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 36, height: 36}}>
               <span className="text-white fw-bold">HR</span>
             </div>
-            <div>
+            <div className="d-none d-sm-block">
               <div className="fw-medium small">{user?.name || profileData.name}</div>
               <div className="text-muted small">
                 {user?.telegram_username ? `@${user.telegram_username}` : profileData.email}
@@ -188,31 +188,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </aside>
         
         {/* Main Content */}
-        <main className={`${user ? 'col-12 col-md-9 col-lg-10' : 'col-12'} px-3 py-4 mobile-content`} style={{
+        <main className={`${user ? 'col-12 col-md-9 col-lg-10' : 'col-12'} mobile-content`} style={{
           minHeight: '100vh'
         }}>
-          {/* Top Bar */}
-          <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 gap-3">
+          {/* Top Bar - Desktop Only */}
+          <div className="d-none d-md-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 gap-3 px-3 py-4">
             <div>
               <h2 className="h4 mb-1">{navigation.find(item => item.href === location.pathname)?.name || 'HR Admin Panel'}</h2>
               <p className="text-muted mb-0">Управление HR процессами и кандидатами</p>
             </div>
             <div className="d-flex align-items-center gap-3">
               <div className="vr mx-2 d-none d-md-block"></div>
-                              <div className="d-flex align-items-center gap-2">
-                  <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
-                    <span className="text-white fw-bold">HR</span>
-                  </div>
-                  <div className="d-none d-md-block">
-                    <div className="fw-medium">{user?.name || profileData.name}</div>
-                    <div className="text-muted small">
-                      {user?.telegram_username ? `@${user.telegram_username}` : profileData.email}
-                      {user?.is_admin && (
-                        <span className="badge bg-success ms-2">Админ</span>
-                      )}
-                    </div>
+              <div className="d-flex align-items-center gap-2">
+                <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: 32, height: 32}}>
+                  <span className="text-white fw-bold">HR</span>
+                </div>
+                <div className="d-none d-md-block">
+                  <div className="fw-medium">{user?.name || profileData.name}</div>
+                  <div className="text-muted small">
+                    {user?.telegram_username ? `@${user.telegram_username}` : profileData.email}
+                    {user?.is_admin && (
+                      <span className="badge bg-success ms-2">Админ</span>
+                    )}
                   </div>
                 </div>
+              </div>
             </div>
           </div>
           {/* Page Content */}

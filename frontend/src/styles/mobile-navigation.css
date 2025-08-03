@@ -5,12 +5,20 @@
   background: white;
   border-top: 1px solid #e9ecef;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  height: 70px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .bottom-nav .nav-link {
   transition: all 0.2s ease;
   border-radius: 8px;
-  margin: 0 4px;
+  margin: 0 2px;
+  padding: 8px 4px;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .bottom-nav .nav-link:hover {
@@ -25,7 +33,7 @@
 .bottom-nav .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
   width: 20px;
@@ -39,23 +47,31 @@
   background: white;
   border-bottom: 1px solid #e9ecef;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
 }
 
 /* Content padding for mobile */
 .mobile-content {
-  padding-bottom: 80px;
+  padding-bottom: 90px;
+  padding-top: 16px;
+  min-height: calc(100vh - 70px);
 }
 
 /* Desktop content */
 @media (min-width: 768px) {
   .mobile-content {
     padding-bottom: 20px;
+    padding-top: 0;
   }
 }
 
 /* Icon styles */
 .nav-icon {
   transition: transform 0.2s ease;
+  margin-bottom: 2px;
 }
 
 .nav-link:hover .nav-icon {
@@ -68,14 +84,127 @@
 
 /* Text styles */
 .nav-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   line-height: 1.2;
+  text-align: center;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 767px) {
+  /* Убираем горизонтальную прокрутку */
+  .table-responsive {
+    overflow-x: hidden;
+  }
+  
+  /* Карточки для мобильных устройств */
+  .mobile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+  }
+  
+  /* Компактные кнопки */
+  .mobile-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Компактные поля ввода */
+  .mobile-input {
+    padding: 10px 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    width: 100%;
+  }
+  
+  /* Адаптивные отступы */
+  .mobile-padding {
+    padding: 16px;
+  }
+  
+  .mobile-margin {
+    margin: 12px 0;
+  }
+  
+  /* Скрываем элементы на мобильных */
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  /* Показываем элементы только на мобильных */
+  .mobile-only {
+    display: block !important;
+  }
+  
+  /* Адаптивная сетка */
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  /* Компактная пагинация */
+  .mobile-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+    flex-wrap: wrap;
+  }
+  
+  .mobile-pagination .btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none !important;
+  }
+  
+  .mobile-hide {
+    display: block !important;
+  }
 }
 
 /* Safe area for devices with home indicator */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .bottom-nav {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .mobile-content {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Touch-friendly elements */
+@media (max-width: 767px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-spacing {
+    margin: 8px 0;
   }
 } 
