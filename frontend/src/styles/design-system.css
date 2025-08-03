@@ -348,14 +348,165 @@ body {
   
   .main-content {
     margin-left: 0;
+    padding: 20px;
   }
   
   .text-headers {
-    font-size: 28px;
+    font-size: 24px;
   }
   
   .text-subheaders {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  /* Улучшенные кнопки для мобильных */
+  .btn {
+    min-height: 48px;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    gap: 10px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  /* Улучшенные карточки */
+  .card {
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Улучшенные поля ввода */
+  .input-field {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 16px;
+    min-height: 48px;
+    border-width: 2px;
+  }
+
+  /* Улучшенные статус бейджи */
+  .status-badge {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* Улучшенная типография */
+  .text-main {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .text-add {
+    font-size: 14px;
+  }
+
+  .text-nav {
+    font-size: 12px;
+  }
+
+  /* Контейнер с улучшенными отступами */
+  .container {
+    padding: 0 20px;
+  }
+
+  /* Утилиты для мобильного spacing */
+  .mb-4 { margin-bottom: 20px; }
+  .mb-6 { margin-bottom: 28px; }
+  .mb-8 { margin-bottom: 36px; }
+
+  .p-4 { padding: 20px; }
+  .p-6 { padding: 28px; }
+  .p-8 { padding: 36px; }
+
+  .gap-2 { gap: 12px; }
+  .gap-4 { gap: 20px; }
+  .gap-6 { gap: 28px; }
+
+  /* Улучшенная таблица для мобильных */
+  .table {
+    font-size: 14px;
+  }
+
+  .table th, .table td {
+    padding: 12px;
+  }
+
+  /* Навигация для мобильных */
+  .nav-item {
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+
+  .nav-item svg {
+    width: 22px;
+    height: 22px;
+    margin-right: 14px;
+  }
+}
+
+/* Дополнительные мобильные утилиты */
+@media (max-width: 480px) {
+  .text-headers {
+    font-size: 22px;
+  }
+  
+  .text-subheaders {
+    font-size: 16px;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .mobile-padding {
+    padding: 16px;
+  }
+}
+
+/* Анимации и переходы */
+@media (max-width: 768px) {
+  .btn, .card, .nav-item, .input-field {
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .nav-item:hover {
+    transform: translateY(-1px);
   }
 }
 

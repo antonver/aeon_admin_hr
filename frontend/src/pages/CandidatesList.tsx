@@ -121,49 +121,52 @@ const CandidatesList: React.FC = () => {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="space-y-4 mobile-padding">
+    <div className="space-y-4 mobile-padding" style={{ paddingBottom: '100px' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-900">Кандидаты</h1>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
           {total} кандидатов
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+      <div className="relative mb-6">
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
         <input
           type="text"
           placeholder="Поиск по ФИО..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+          style={{ minHeight: '48px' }}
         />
       </div>
 
       {/* Filters Toggle */}
-      <div className="mb-4">
+      <div className="mb-6">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+          className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors"
+          style={{ minHeight: '56px' }}
         >
-          <span className="font-medium">Фильтры</span>
+          <span className="font-medium text-base">Фильтры</span>
           <Filter className="w-5 h-5" />
         </button>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-3">
+        <div className="bg-gray-50 rounded-xl p-5 mb-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
               Статус
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+              style={{ minHeight: '48px' }}
             >
               <option value="">Все кандидаты</option>
               <option value="берем">Берем</option>
@@ -173,6 +176,7 @@ const CandidatesList: React.FC = () => {
           <button
             onClick={() => setShowFilters(false)}
             className="w-full btn btn-primary"
+            style={{ minHeight: '48px', padding: '12px 24px' }}
           >
             Применить фильтры
           </button>
@@ -180,18 +184,18 @@ const CandidatesList: React.FC = () => {
       )}
 
       {/* Candidates List - Mobile Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {candidates.map((candidate) => (
           <div key={candidate.id} className="mobile-card">
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-lg">
                     {candidate.full_name.charAt(0)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-gray-900 truncate text-lg">
                     {candidate.full_name}
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -200,26 +204,26 @@ const CandidatesList: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <span className={`status-badge ${getStatusColor(candidate.status)} text-sm px-2 py-1 rounded-full`}>
+                <span className={`status-badge ${getStatusColor(candidate.status)} text-sm px-3 py-2 rounded-full font-medium`}>
                   {getStatusEmoji(candidate.status)} {candidate.status}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-2 mb-3">
+            <div className="space-y-3 mb-4">
               {candidate.telegram_username && (
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                   <span className="font-medium mr-2">Telegram:</span>
                   <span className="truncate">{candidate.telegram_username}</span>
                 </div>
               )}
               {candidate.email && (
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                   <span className="font-medium mr-2">Email:</span>
                   <span className="truncate">{candidate.email}</span>
                 </div>
               )}
-              <div className="flex items-center text-sm text-gray-600">
+              <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                 <Calendar className="w-4 h-4 mr-2" />
                 <span>{new Date(candidate.last_action_date).toLocaleDateString()}</span>
               </div>
@@ -228,7 +232,8 @@ const CandidatesList: React.FC = () => {
             <div className="flex justify-end">
               <Link
                 to={`/candidate/${candidate.id}`}
-                className="btn btn-primary btn-sm flex items-center space-x-2"
+                className="btn btn-primary flex items-center space-x-2"
+                style={{ minHeight: '44px', padding: '12px 20px' }}
               >
                 <Eye className="w-4 h-4" />
                 <span>Открыть</span>
@@ -251,17 +256,18 @@ const CandidatesList: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mobile-pagination">
+        <div className="mobile-pagination" style={{ marginBottom: '20px', paddingBottom: '20px' }}>
           <button
             className="btn btn-outline touch-target"
             onClick={() => setPage(page - 1)}
             disabled={page === 1}
+            style={{ minWidth: '48px', minHeight: '48px', padding: '12px' }}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
           
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600 px-3">
+            <span className="text-sm text-gray-600 px-4 py-2 font-medium">
               {page} из {totalPages}
             </span>
           </div>
@@ -270,8 +276,9 @@ const CandidatesList: React.FC = () => {
             className="btn btn-outline touch-target"
             onClick={() => setPage(page + 1)}
             disabled={page === totalPages}
+            style={{ minWidth: '48px', minHeight: '48px', padding: '12px' }}
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       )}

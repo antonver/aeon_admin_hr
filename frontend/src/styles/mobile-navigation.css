@@ -5,16 +5,17 @@
   background: white;
   border-top: 1px solid #e9ecef;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  height: 70px;
+  height: 75px;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .bottom-nav .nav-link {
   transition: all 0.2s ease;
-  border-radius: 8px;
-  margin: 0 2px;
-  padding: 8px 4px;
-  min-height: 50px;
+  border-radius: 12px;
+  margin: 0 3px;
+  padding: 10px 6px;
+  min-height: 55px;
+  min-width: 55px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,23 +24,25 @@
 
 .bottom-nav .nav-link:hover {
   background-color: #f8f9fa;
+  transform: translateY(-1px);
 }
 
 .bottom-nav .nav-link.active {
   background-color: #f0f0ff;
+  transform: translateY(-2px);
 }
 
 /* Active indicator */
 .bottom-nav .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: 4px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 2px;
+  width: 24px;
+  height: 3px;
   background-color: #6f42c1;
-  border-radius: 1px;
+  border-radius: 2px;
 }
 
 /* Mobile top bar */
@@ -47,7 +50,7 @@
   background: white;
   border-bottom: 1px solid #e9ecef;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 12px 16px;
+  padding: 16px 20px;
   position: sticky;
   top: 0;
   z-index: 1020;
@@ -55,9 +58,9 @@
 
 /* Content padding for mobile */
 .mobile-content {
-  padding-bottom: 90px;
-  padding-top: 16px;
-  min-height: calc(100vh - 70px);
+  padding-bottom: 100px;
+  padding-top: 20px;
+  min-height: calc(100vh - 75px);
 }
 
 /* Desktop content */
@@ -71,24 +74,24 @@
 /* Icon styles */
 .nav-icon {
   transition: transform 0.2s ease;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .nav-link:hover .nav-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .nav-link.active .nav-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 /* Text styles */
 .nav-text {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
-  max-width: 60px;
+  max-width: 65px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -104,40 +107,43 @@
   /* Карточки для мобильных устройств */
   .mobile-card {
     background: white;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
   }
   
   /* Компактные кнопки */
   .mobile-btn {
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 8px;
-    min-height: 40px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+    min-height: 48px;
+    min-width: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: 500;
   }
   
   /* Компактные поля ввода */
   .mobile-input {
-    padding: 10px 12px;
+    padding: 12px 16px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid #dee2e6;
     width: 100%;
+    min-height: 48px;
   }
   
   /* Адаптивные отступы */
   .mobile-padding {
-    padding: 16px;
+    padding: 20px;
   }
   
   .mobile-margin {
-    margin: 12px 0;
+    margin: 16px 0;
   }
   
   /* Скрываем элементы на мобильных */
@@ -154,7 +160,7 @@
   .mobile-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 16px;
   }
   
   /* Компактная пагинация */
@@ -162,16 +168,76 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
-    padding: 16px 0;
+    gap: 12px;
+    padding: 20px 0;
     flex-wrap: wrap;
+    margin-bottom: 20px;
   }
   
   .mobile-pagination .btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 8px;
+    min-width: 48px;
+    height: 48px;
+    padding: 12px;
     font-size: 14px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  /* Улучшенные кнопки */
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7B42F6 0%, #6A3AE8 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(123, 66, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(123, 66, 246, 0.4);
+  }
+
+  .btn-outline {
+    border: 2px solid #7B42F6;
+    background: white;
+    color: #7B42F6;
+  }
+
+  .btn-outline:hover {
+    background: #7B42F6;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  /* Улучшенные поля ввода */
+  input, select, textarea {
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 48px;
+    transition: all 0.2s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: #7B42F6;
+    box-shadow: 0 0 0 3px rgba(123, 66, 246, 0.1);
+    outline: none;
+  }
+
+  /* Улучшенные статус бейджи */
+  .status-badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
   }
 }
 
@@ -189,22 +255,61 @@
 /* Safe area for devices with home indicator */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
   
   .mobile-content {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
   }
 }
 
 /* Touch-friendly elements */
 @media (max-width: 767px) {
   .touch-target {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
   }
   
   .touch-spacing {
-    margin: 8px 0;
+    margin: 12px 0;
+  }
+
+  /* Spacing improvements */
+  .space-y-4 > * + * {
+    margin-top: 16px;
+  }
+
+  .space-y-6 > * + * {
+    margin-top: 24px;
+  }
+
+  .gap-4 {
+    gap: 16px;
+  }
+
+  .gap-6 {
+    gap: 24px;
+  }
+}
+
+/* Анимации и переходы */
+@media (max-width: 767px) {
+  /* Плавные переходы для интерактивных элементов */
+  button, .btn, a[class*="btn"], .mobile-card {
+    transition: all 0.2s ease;
+  }
+
+  /* Hover эффекты для сенсорных устройств */
+  @media (hover: hover) {
+    .mobile-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  /* Активные состояния */
+  button:active, .btn:active {
+    transform: scale(0.98);
   }
 } 
