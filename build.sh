@@ -19,11 +19,24 @@ if [ -d "frontend/build" ]; then
     echo "📋 Копируем новые статические файлы..."
     cp -r frontend/build/* backend/static/
     
-    # Исправляем структуру папок - перемещаем файлы из static/static/ в static/
+    # ПРИНУДИТЕЛЬНО исправляем структуру папок - перемещаем файлы из static/static/ в static/
     if [ -d "backend/static/static" ]; then
-        echo "🔧 Исправляем структуру папок..."
-        mv backend/static/static/* backend/static/
-        rmdir backend/static/static
+        echo "🔧 Исправляем структуру папок (static/static/ -> static/)..."
+        # Перемещаем CSS файлы
+        if [ -d "backend/static/static/css" ]; then
+            mkdir -p backend/static/css
+            mv backend/static/static/css/* backend/static/css/ 2>/dev/null || true
+        fi
+        # Перемещаем JS файлы  
+        if [ -d "backend/static/static/js" ]; then
+            mkdir -p backend/static/js
+            mv backend/static/static/js/* backend/static/js/ 2>/dev/null || true
+        fi
+        # Удаляем пустые директории
+        rmdir backend/static/static/css 2>/dev/null || true
+        rmdir backend/static/static/js 2>/dev/null || true
+        rmdir backend/static/static 2>/dev/null || true
+        echo "✅ Структура папок исправлена"
     fi
     
     echo "✅ Статические файлы обновлены"

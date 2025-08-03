@@ -21,4 +21,17 @@ npm install
 npm run build
 cd ..
 
-echo "✅ Pre-build завершен!" 
+echo "✅ Pre-build завершен!"
+
+# Дополнительная проверка для отладки на Render
+echo "🔍 Проверяем что файлы собрались:"
+if [ -d "frontend/build" ]; then
+    echo "✅ frontend/build существует"
+    ls -la frontend/build/
+    if [ -d "frontend/build/static" ]; then
+        echo "✅ frontend/build/static существует"
+        ls -la frontend/build/static/
+    fi
+else
+    echo "❌ frontend/build не существует!"
+fi 
