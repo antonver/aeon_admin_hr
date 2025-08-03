@@ -18,26 +18,32 @@ if [ -d "frontend/build" ]; then
     rm -rf backend/static/*
     echo "📋 Копируем новые статические файлы..."
     cp -r frontend/build/* backend/static/
+    
+    # Исправляем структуру папок - перемещаем файлы из static/static/ в static/
+    if [ -d "backend/static/static" ]; then
+        echo "🔧 Исправляем структуру папок..."
+        mv backend/static/static/* backend/static/
+        rmdir backend/static/static
+    fi
+    
     echo "✅ Статические файлы обновлены"
     echo "📁 Проверяем структуру файлов:"
     ls -la backend/static/
-    ls -la backend/static/static/js/ 2>/dev/null || echo "⚠️  JS файлы не найдены"
-    ls -la backend/static/static/css/ 2>/dev/null || echo "⚠️  CSS файлы не найдены"
+    ls -la backend/static/js/ 2>/dev/null || echo "⚠️  JS файлы не найдены"
+    ls -la backend/static/css/ 2>/dev/null || echo "⚠️  CSS файлы не найдены"
     
     # Проверяем что index.html содержит правильные пути
     echo "📄 Проверяем index.html..."
-    if grep -q "main.f8b9cbc8.js" backend/static/index.html; then
-        echo "✅ JS файл найден в index.html"
+    if ls backend/static/js/main.*.js 1> /dev/null 2>&1; then
+        echo "✅ JS файлы найдены в правильной директории"
     else
-        echo "❌ JS файл не найден в index.html"
-        cat backend/static/index.html | grep -o 'main\.[^"]*\.js'
+        echo "❌ JS файлы не найдены"
     fi
     
-    if grep -q "main.16434665.css" backend/static/index.html; then
-        echo "✅ CSS файл найден в index.html"
+    if ls backend/static/css/main.*.css 1> /dev/null 2>&1; then
+        echo "✅ CSS файлы найдены в правильной директории"
     else
-        echo "❌ CSS файл не найден в index.html"
-        cat backend/static/index.html | grep -o 'main\.[^"]*\.css'
+        echo "❌ CSS файлы не найдены"
     fi
 else
     echo "⚠️  Директория frontend/build не найдена"
