@@ -137,42 +137,36 @@ app.include_router(admins.router, prefix="/api", tags=["admins"])
 app.include_router(external_api.router, prefix="/api/external", tags=["external"])
 
 # Подключаем статические файлы
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
 @app.get("/")
 async def root():
     try:
-        return FileResponse("static/index.html")
+        return FileResponse("backend/static/index.html")
     except FileNotFoundError:
         return {"message": "HR Admin Panel Backend API", "frontend": "not built"}
 
 @app.get("/manifest.json")
 async def manifest():
     try:
-        return FileResponse("static/manifest.json")
+        return FileResponse("backend/static/manifest.json")
     except FileNotFoundError:
         return {"message": "Manifest not found"}
 
 @app.get("/test-telegram")
 async def test_telegram():
-    try:
-        return FileResponse("static/test-telegram.html")
-    except FileNotFoundError:
-        return {"message": "Test page not found"}
+    return {"message": "Telegram test endpoint", "status": "available"}
 
 @app.get("/test-external-api")
 async def test_external_api():
     try:
-        return FileResponse("static/test-external-api.html")
+        return FileResponse("backend/static/test-external-api.html")
     except FileNotFoundError:
         return {"message": "Test page not found"}
 
 @app.get("/debug")
 async def debug():
-    try:
-        return FileResponse("static/debug.html")
-    except FileNotFoundError:
-        return {"message": "Debug page not found"}
+    return {"message": "Debug endpoint", "status": "available"}
 
 @app.get("/health")
 async def health_check():
@@ -200,7 +194,7 @@ async def catch_all(full_path: str):
     
     # Для всех остальных путей возвращаем index.html
     try:
-        return FileResponse("static/index.html")
+        return FileResponse("backend/static/index.html")
     except FileNotFoundError:
         return {"message": "Frontend not built", "api_docs": "/docs"}
 
