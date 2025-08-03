@@ -187,27 +187,29 @@ const CandidatesList: React.FC = () => {
       <div className="space-y-4">
         {candidates.map((candidate) => (
           <div key={candidate.id} className="mobile-card">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-lg">
-                    {candidate.full_name.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate text-lg">
-                    {candidate.full_name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    ID: {candidate.id}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className={`status-badge ${getStatusColor(candidate.status)} text-sm px-3 py-2 rounded-full font-medium`}>
-                  {getStatusEmoji(candidate.status)} {candidate.status}
+            {/* Header with Avatar and Name */}
+            <div className="flex items-start space-x-3 mb-3">
+              <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-white font-bold text-lg">
+                  {candidate.full_name.charAt(0)}
                 </span>
               </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 text-lg leading-tight mb-1">
+                  {candidate.full_name}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  ID: {candidate.id}
+                </p>
+              </div>
+            </div>
+            
+            {/* Status Badge - Separate Row */}
+            <div className="flex justify-end mb-4">
+              <span className={`status-badge ${getStatusColor(candidate.status)} text-sm px-4 py-2 rounded-full font-medium inline-flex items-center space-x-1`}>
+                <span>{getStatusEmoji(candidate.status)}</span>
+                <span>{candidate.status}</span>
+              </span>
             </div>
 
             <div className="space-y-3 mb-4">
