@@ -50,6 +50,10 @@ const CandidatesList: React.FC = () => {
       params.append('limit', String(PAGE_SIZE));
       
       const url = `/api/candidates/?${params}`;
+      console.log('Fetching candidates with URL:', url);
+      console.log('Search term:', searchTerm);
+      console.log('Status filter:', statusFilter);
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -124,7 +128,23 @@ const CandidatesList: React.FC = () => {
     <div className="space-y-4 mobile-padding" style={{ paddingBottom: '100px' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Кандидаты</h1>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Кандидаты</h1>
+          {(searchTerm || statusFilter) && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {searchTerm && (
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  Поиск: {searchTerm}
+                </span>
+              )}
+              {statusFilter && (
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                  Статус: {statusFilter}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
           {total} кандидатов
         </div>
@@ -173,13 +193,27 @@ const CandidatesList: React.FC = () => {
               <option value="не берем">Не берем</option>
             </select>
           </div>
-          <button
-            onClick={() => setShowFilters(false)}
-            className="w-full btn btn-primary"
-            style={{ minHeight: '48px', padding: '12px 24px' }}
-          >
-            Применить фильтры
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setStatusFilter('');
+                setSearchTerm('');
+                setPage(1);
+                setShowFilters(false);
+              }}
+              className="flex-1 btn btn-outline"
+              style={{ minHeight: '48px', padding: '12px 24px' }}
+            >
+              Сбросить
+            </button>
+            <button
+              onClick={() => setShowFilters(false)}
+              className="flex-1 btn btn-primary"
+              style={{ minHeight: '48px', padding: '12px 24px' }}
+            >
+              Применить
+            </button>
+          </div>
         </div>
       )}
 

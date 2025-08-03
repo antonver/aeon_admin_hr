@@ -26,8 +26,8 @@ async def get_candidates_count(
     if search:
         query = query.filter(Candidate.full_name.ilike(f"%{search}%"))
     if status:
-        # Фильтруем только по "прошёл" и "отклонён"
-        if status in ["прошёл", "отклонён"]:
+        # Фильтруем по всем возможным статусам
+        if status in ["берем", "не берем", "прошёл", "отклонён", "ожидает"]:
             query = query.filter(Candidate.status == status)
     total = query.count()
     return {"total": total}
@@ -47,8 +47,8 @@ async def get_candidates(
         query = query.filter(Candidate.full_name.ilike(f"%{search}%"))
     
     if status:
-        # Фильтруем только по "прошёл" и "отклонён"
-        if status in ["прошёл", "отклонён"]:
+        # Фильтруем по всем возможным статусам
+        if status in ["берем", "не берем", "прошёл", "отклонён", "ожидает"]:
             query = query.filter(Candidate.status == status)
     
     candidates = query.offset(skip).limit(limit).all()
