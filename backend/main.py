@@ -182,6 +182,13 @@ async def test_external_api():
     except FileNotFoundError:
         return {"message": "Test page not found"}
 
+@app.get("/clear-cache")
+async def clear_cache():
+    try:
+        return FileResponse("clear-cache.html")
+    except FileNotFoundError:
+        return {"message": "Clear cache page not found"}
+
 @app.get("/debug")
 async def debug():
     try:
