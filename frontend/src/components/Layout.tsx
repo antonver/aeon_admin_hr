@@ -137,6 +137,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     console.log('User is not admin, skipping admin navigation');
   }
 
+  // Создаем версию навигации для мобильной панели с короткими названиями
+  const mobileNavigation = navigation.map(item => ({
+    ...item,
+    name: item.name === 'Администраторы' ? 'Админы' : 
+          item.name === 'Кандидаты' ? 'Кандидаты' :
+          item.name === 'Дашборд' ? 'Главная' :
+          item.name
+  }));
+
   return (
     <div className="container-fluid p-0 h-100">
       {/* Top Bar for mobile */}
@@ -242,7 +251,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Bottom Navigation for mobile */}
       {user && (
-        <BottomNavigation navigation={navigation} />
+        <BottomNavigation navigation={mobileNavigation} />
       )}
 
       {/* Модальное окно профиля */}

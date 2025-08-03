@@ -31,7 +31,18 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigation }) => {
                 size={20} 
                 className={`nav-icon mb-1 ${isActive ? 'text-primary' : 'text-muted'}`}
               />
-              <span className={`nav-text ${isActive ? 'text-primary fw-medium' : 'text-muted'}`}>
+              <span 
+                className={`nav-text ${isActive ? 'text-primary fw-medium' : 'text-muted'}`}
+                style={{ 
+                  fontSize: '11px', 
+                  lineHeight: '1.2',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '50px'
+                }}
+              >
                 {item.name}
               </span>
             </Link>
