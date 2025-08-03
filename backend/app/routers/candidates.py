@@ -35,7 +35,7 @@ async def get_candidates_count(
 @router.get("/", response_model=List[CandidateModel])
 async def get_candidates(
     search: Optional[str] = Query(None, description="Поиск по ФИО"),
-    status: Optional[str] = Query(None, description="Фильтр по статусу: прошёл, отклонён"),
+    status: Optional[str] = Query(None, description="Фильтр по статусу: берем, не берем"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -301,12 +301,27 @@ async def submit_interview_results(
         telegram_id = results.get("telegram_id")
         interview_results = results.get("results", "")
         
+        # Анализируем результаты и определяем статус
+        def analyze_interview_results(results_text: str) -> str:
+            if not results_text:
+                return "ожидает"
+            
+            lower_results = results_text.lower()
+            if "не берем" in lower_results:
+                return "не берем"
+            else:
+                return "берем"
+        
+        # Определяем статус на основе результатов
+        status = analyze_interview_results(interview_results)
+        
         # Создаем нового кандидата
         candidate_data = {
             "full_name": full_name,
             "telegram_username": telegram_username,
             "telegram_id": telegram_id,
-            "results": interview_results
+            "results": interview_results,
+            "status": status
         }
         
         db_candidate = Candidate(**candidate_data)
@@ -327,7 +342,8 @@ async def submit_interview_results(
         return {
             "success": True,
             "message": "Результаты интервью успешно сохранены",
-            "candidate_id": db_candidate.id
+            "candidate_id": db_candidate.id,
+            "status": status
         }
         
     except Exception as e:

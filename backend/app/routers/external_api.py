@@ -38,13 +38,27 @@ async def submit_interview_results(
         if not full_name:
             raise HTTPException(status_code=400, detail="full_name обязателен")
         
+        # Анализируем результаты и определяем статус
+        def analyze_interview_results(results_text: str) -> str:
+            if not results_text:
+                return "ожидает"
+            
+            lower_results = results_text.lower()
+            if "не берем" in lower_results:
+                return "не берем"
+            else:
+                return "берем"
+        
+        # Определяем статус на основе результатов
+        status = analyze_interview_results(interview_results)
+        
         # Создаем нового кандидата
         candidate_data = {
             "full_name": full_name,
             "telegram_username": telegram_username,
             "telegram_id": telegram_id,
             "results": interview_results,
-            "status": "ожидает"
+            "status": status
         }
         
         db_candidate = Candidate(**candidate_data)
@@ -72,6 +86,7 @@ async def submit_interview_results(
             "success": True,
             "message": "Результаты интервью успешно сохранены",
             "candidate_id": db_candidate.id,
+            "status": status,
             "timestamp": datetime.utcnow().isoformat()
         }
         

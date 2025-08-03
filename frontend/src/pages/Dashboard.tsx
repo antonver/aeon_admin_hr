@@ -60,9 +60,8 @@ const Dashboard: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ожидает': return 'status-waiting';
-      case 'прошёл': return 'status-passed';
-      case 'приглашён': return 'status-invited';
-      case 'отклонён': return 'status-rejected';
+      case 'берем': return 'status-passed';
+      case 'не берем': return 'status-rejected';
       default: return 'status-waiting';
     }
   };
@@ -77,7 +76,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card">
@@ -100,7 +98,7 @@ const Dashboard: React.FC = () => {
               <UserCheck className="h-8 w-8 text-accept" />
             </div>
             <div className="ml-4">
-              <p className="text-add text-background-2">Прошедшие кандидаты</p>
+              <p className="text-add text-background-2">Берем</p>
               <p className="text-subheaders text-background font-bold">
                 {metrics?.passed_candidates || 0}
               </p>
@@ -128,7 +126,7 @@ const Dashboard: React.FC = () => {
               <UserX className="h-8 w-8 text-error" />
             </div>
             <div className="ml-4">
-              <p className="text-add text-background-2">Отклонённые</p>
+              <p className="text-add text-background-2">Не берем</p>
               <p className="text-subheaders text-background font-bold">
                 {(metrics?.total_candidates || 0) - (metrics?.passed_candidates || 0)}
               </p>

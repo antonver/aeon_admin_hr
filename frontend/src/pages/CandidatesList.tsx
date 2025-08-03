@@ -13,12 +13,10 @@ interface Candidate {
   name?: string;  // Добавляем поле name
   telegram_username?: string;
   email?: string;
-  status: string;  // Теперь только "прошёл" и "отклонён"
+  status: string;  // Теперь "берем" и "не берем"
   last_action_date: string;
   last_action_type?: string;
 }
-
-
 
 const PAGE_SIZE = 10;
 
@@ -83,13 +81,11 @@ const CandidatesList: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'прошёл': return 'status-passed';
-      case 'отклонён': return 'status-rejected';
+      case 'берем': return 'status-passed';
+      case 'не берем': return 'status-rejected';
       default: return 'status-waiting';
     }
   };
-
-
 
   if (loading) {
     return (
@@ -121,34 +117,33 @@ const CandidatesList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
       {/* Filters */}
       <div className="card">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex-1 w-full">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-background-2" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-background-2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Поиск по ФИО..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-12"
+                className="input-field pl-10 w-full"
               />
             </div>
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="input-field w-48"
+            className="input-field w-full md:w-48"
           >
             <option value="">Все кандидаты</option>
-            <option value="прошёл">Прошедшие</option>
-            <option value="отклонён">Не прошедшие</option>
+            <option value="берем">Берем</option>
+            <option value="не берем">Не берем</option>
           </select>
           <button
             onClick={fetchCandidates}
-            className="btn btn-secondary"
+            className="btn btn-secondary w-full md:w-auto"
           >
             <Filter className="w-5 h-5" />
             <span>Применить</span>
@@ -230,37 +225,58 @@ const CandidatesList: React.FC = () => {
             </tbody>
           </table>
         </div>
-        {/* Пагинация */}
+        
+        {/* Пагинация - улучшенная для мобильных устройств */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-4">
-            <button
-              className="btn btn-outline"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-            >
-              Назад
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 pb-4">
+            <div className="flex items-center gap-2 mb-2 sm:mb-0">
               <button
-                key={p}
-                className={`btn ${p === page ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setPage(p)}
+                className="btn btn-outline px-3 py-2 text-sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
               >
-                {p}
+                Назад
               </button>
-            ))}
-            <button
-              className="btn btn-outline"
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
-            >
-              Вперёд
-            </button>
+              <span className="text-sm text-background-2 px-2">
+                {page} из {totalPages}
+              </span>
+              <button
+                className="btn btn-outline px-3 py-2 text-sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page === totalPages}
+              >
+                Вперёд
+              </button>
+            </div>
+            
+            {/* Номера страниц - только для десктопа */}
+            <div className="hidden md:flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    className={`btn px-3 py-2 text-sm ${pageNum === page ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
-
-
     </div>
   );
 };

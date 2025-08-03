@@ -177,9 +177,8 @@ const Metrics: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ожидает': return '#fbbf24'; // yellow-400
-      case 'прошёл': return '#10b981'; // green-500
-      case 'приглашён': return '#3b82f6'; // blue-500
-      case 'отклонён': return '#ef4444'; // red-500
+              case 'берем': return '#10b981'; // green-500
+        case 'не берем': return '#ef4444'; // red-500
       default: return '#6b7280'; // gray-500
     }
   };
@@ -418,7 +417,7 @@ const Metrics: React.FC = () => {
               <UserX className="h-8 w-8 text-error" />
             </div>
             <div className="ml-4">
-              <p className="text-add text-background-2">Отклонённые</p>
+                              <p className="text-add text-background-2">Не берем</p>
               <p className="text-subheaders text-background font-bold">
                 {(overview?.total_candidates || 0) - (overview?.passed_candidates || 0)}
               </p>

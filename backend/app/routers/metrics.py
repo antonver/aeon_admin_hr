@@ -46,7 +46,7 @@ async def get_metrics_overview(
         
         # Прошедшие кандидаты за период
         passed_candidates = db.query(Candidate).filter(
-            Candidate.status == "прошёл",
+            Candidate.status == "берем",
             Candidate.created_at >= start_date,
             Candidate.created_at <= end_date
         ).count()
@@ -56,7 +56,7 @@ async def get_metrics_overview(
     else:
         # Без фильтрации - все данные
         total_candidates = db.query(Candidate).count()
-        passed_candidates = db.query(Candidate).filter(Candidate.status == "прошёл").count()
+        passed_candidates = db.query(Candidate).filter(Candidate.status == "берем").count()
         test_pass_rate = (passed_candidates / total_candidates * 100) if total_candidates > 0 else 0
     
     return Metrics(

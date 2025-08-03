@@ -33,7 +33,7 @@ class Candidate(Base):
     telegram_username = Column(String, nullable=True)
     telegram_id = Column(String, nullable=True)
     results = Column(String, nullable=True)
-    status = Column(String, default="ожидает")  # ожидает, прошёл, отклонён
+    status = Column(String, default="ожидает")  # ожидает, берем, не берем
     last_action_date = Column(DateTime, default=datetime.utcnow)
     last_action_type = Column(String, nullable=True)
     notion_id = Column(String, nullable=True)

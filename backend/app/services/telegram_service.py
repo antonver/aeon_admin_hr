@@ -218,8 +218,12 @@ class TelegramService:
             print("Нет администраторов для отправки уведомлений")
             return False
         
+        # Определяем эмодзи и текст статуса
+        status_emoji = "✅" if candidate.status == "берем" else "❌"
+        status_text = "БЕРЕМ" if candidate.status == "берем" else "НЕ БЕРЕМ"
+        
         # Формируем сообщение
-        message = f"✅ <b>Интервью завершено</b>\n\n"
+        message = f"{status_emoji} <b>Интервью завершено - {status_text}</b>\n\n"
         message += f"👤 <b>Кандидат:</b> {candidate.full_name}\n"
         message += f"📊 <b>Вопросов:</b> {total_questions}\n"
         message += f"⭐ <b>Средняя оценка:</b> {avg_score:.1f}/10\n"
