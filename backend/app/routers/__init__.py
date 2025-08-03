@@ -1,2 +1,2 @@
 # Routers package
-from . import candidates, notifications, metrics, user, telegram_auth, admins 
+from . import candidates, notifications, metrics, user, telegram_auth, admins, external_api 

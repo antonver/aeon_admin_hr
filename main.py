@@ -7,11 +7,11 @@ import uvicorn
 from dotenv import load_dotenv
 import os
 
-# Импорты для работы с Render
-from app.database import engine, Base
-from app.routers import candidates, notifications, metrics, user, telegram_auth, admins, external_api
-from app.services.telegram_service import TelegramService
-from app.services.notion_service import NotionService
+# Импорты для работы с Render - используем относительные импорты
+from backend.app.database import engine, Base
+from backend.app.routers import candidates, notifications, metrics, user, telegram_auth, admins, external_api
+from backend.app.services.telegram_service import TelegramService
+from backend.app.services.notion_service import NotionService
 
 load_dotenv()
 
