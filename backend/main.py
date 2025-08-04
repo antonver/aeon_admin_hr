@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from dotenv import load_dotenv
 import os
+import time
 
 # Импорты для работы с Render - используем относительные импорты
 from app.database import engine, Base
@@ -144,11 +145,14 @@ from fastapi import Request
 async def add_no_cache_headers(request: Request, call_next):
     response = await call_next(request)
     
-    # Отключаем кэширование для статических файлов
+    # Отключаем кэширование для статических файлов и добавляем версионирование
     if request.url.path.startswith("/static/"):
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+        # Добавляем заголовок для принудительного обновления
+        response.headers["Last-Modified"] = "Thu, 01 Jan 1970 00:00:00 GMT"
+        response.headers["ETag"] = f'"v{int(time.time())}"'
     
     return response
 
