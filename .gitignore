@@ -28,12 +28,10 @@ ENV/
 env.bak/
 venv.bak/
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Environment variables
 .env
@@ -42,14 +40,29 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Build outputs
+frontend/build/
+frontend/dist/
+backend/static/
 
 # Logs
 *.log
 logs/
+cloudflared*.log
+tunnel*.log
+localtunnel*.log
+
+# PID files
+*.pid
+.cloudflared-*.pid
 
 # IDE
 .vscode/
@@ -67,13 +80,32 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Cloudflare
-credentials.json
-*.pem
-
 # Docker
 .dockerignore
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+.cache/
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Backup files
+*.bak
+*.backup 

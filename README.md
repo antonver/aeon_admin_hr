@@ -1,202 +1,108 @@
-# 🚀 HR Admin System
+# Aeon Admin HR System
 
-Полнофункциональная система управления HR-процессами с интеграцией Telegram и Notion.
+Система управления HR-процессами с интеграцией Telegram и внешними API.
 
-## 🎯 Возможности
-
-- **Управление кандидатами**: Добавление, редактирование, отслеживание статуса
-- **Интервью**: Проведение и запись результатов интервью
-- **Метрики**: Аналитика и отчеты по кандидатам
-- **Уведомления**: Интеграция с Telegram для уведомлений
-- **Notion интеграция**: Синхронизация с Notion
-- **Telegram Mini Apps**: Поддержка Telegram ботов
-- **Внешний API**: REST API для интеграции с внешними системами
-
-## 🚀 Быстрый запуск
-
-### 🐳 Полный запуск с Docker (рекомендуется)
-
-```bash
-./start-full-docker.sh
-```
-
-Этот скрипт:
-- ✅ Проверяет все зависимости (Docker, cloudflared)
-- ✅ Запускает PostgreSQL в Docker
-- ✅ Запускает backend в Docker
-- ✅ Запускает frontend в Docker
-- ✅ Настраивает Cloudflare Tunnel
-- ✅ Создает тестовые данные
-- ✅ Предоставляет полную информацию о доступе
-
-### 🐳 Запуск только с Docker (без туннеля)
-
-```bash
-./start-docker-only.sh
-```
-
-Этот скрипт:
-- ✅ Проверяет зависимости (Docker)
-- ✅ Запускает PostgreSQL в Docker
-- ✅ Запускает backend в Docker
-- ✅ Запускает frontend в Docker
-- ✅ Создает тестовые данные
-- ✅ Предоставляет информацию о доступе
-
-### 📱 Локальная установка
-
-```bash
-./start-app.sh
-```
-
-## 🛑 Остановка
-
-### Для Docker версии:
-```bash
-./stop-full-docker.sh
-```
-
-### Для локальной версии:
-Нажмите `Ctrl+C` в терминале, где запущен скрипт.
-
-## 📊 Доступ к системе
-
-После запуска система будет доступна:
-
-- **Frontend**: http://localhost:3002 (Docker) или http://localhost:3000 (локально)
-- **Backend API**: http://localhost:8000
-- **API документация**: http://localhost:8000/docs
-- **Проверка здоровья**: http://localhost:8000/api/health
-
-## 🔧 Требования
-
-- Docker Desktop (для Docker версии)
-- Python 3.8+ (для локальной версии)
-- Node.js 14+ (для локальной версии)
-- cloudflared (устанавливается автоматически)
-
-## 📚 Документация
-
-- [QUICK_START.md](QUICK_START.md) - Быстрый старт
-- [README_DOCKER.md](README_DOCKER.md) - Подробная документация по Docker
-- [EXTERNAL_ACCESS_GUIDE.md](EXTERNAL_ACCESS_GUIDE.md) - Настройка внешнего доступа
-- [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) - Настройка Telegram интеграции
-
-## 🏗️ Архитектура
+## 📁 Структура проекта
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   Backend       │    │   Database      │
-│   (React)       │◄──►│   (FastAPI)     │◄──►│   (PostgreSQL)  │
-│   Port: 3002    │    │   Port: 8000    │    │   Port: 5432    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Nginx         │    │   Telegram      │    │   Notion        │
-│   (Proxy)       │    │   Bot           │    │   Integration   │
-│   Port: 80      │    │   (Optional)    │    │   (Optional)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+aeon_admin_hr-1/
+├── backend/                 # Backend на FastAPI
+│   ├── app/                # Основное приложение
+│   │   ├── models.py       # Модели данных
+│   │   ├── database.py     # Настройки базы данных
+│   │   ├── routers/        # API роутеры
+│   │   └── services/       # Бизнес-логика
+│   ├── alembic/            # Миграции базы данных
+│   ├── static/             # Статические файлы
+│   ├── main.py             # Точка входа backend
+│   ├── requirements.txt    # Python зависимости
+│   └── Dockerfile          # Docker конфигурация
+├── frontend/               # Frontend на React + TypeScript
+│   ├── src/                # Исходный код
+│   │   ├── components/     # React компоненты
+│   │   ├── pages/          # Страницы приложения
+│   │   ├── hooks/          # React хуки
+│   │   └── types/          # TypeScript типы
+│   ├── public/             # Публичные файлы
+│   ├── package.json        # Node.js зависимости
+│   └── Dockerfile          # Docker конфигурация
+├── docker-compose.yml      # Docker Compose конфигурация
+├── render.yaml             # Конфигурация Render
+├── main.py                 # Основной файл приложения
+└── README.md               # Документация
 ```
 
-## 🔑 Тестовые данные
+## 🚀 Быстрый старт
 
-После запуска создается тестовый админ:
-- **Email**: `admin@example.com`
-- **Пароль**: `admin123`
+### Локальная разработка
 
-И 15 тестовых кандидатов с различными статусами.
+1. **Клонируйте репозиторий:**
+   ```bash
+   git clone <repository-url>
+   cd aeon_admin_hr-1
+   ```
 
-## 🌐 Внешний доступ
+2. **Настройте переменные окружения:**
+   ```bash
+   cp env.example .env
+   cp backend/env.example backend/.env
+   ```
 
-Для доступа из интернета используйте:
-
-1. **Cloudflare Tunnel** (автоматически настраивается):
+3. **Запустите с помощью Docker:**
    ```bash
    ./start-full-docker.sh
    ```
 
-2. **Прямой доступ** (если порт открыт):
+4. **Или запустите локально:**
    ```bash
-   ./start-direct-access.sh
+   # Backend
+   cd backend
+   pip install -r requirements.txt
+   python main.py
+   
+   # Frontend
+   cd frontend
+   npm install
+   npm start
    ```
 
-3. **Ngrok туннель**:
+### Продакшн развертывание
+
+1. **На Render:**
    ```bash
-   ./setup-ngrok-tunnel.sh
+   ./deploy-render.sh
    ```
 
-## 🔍 Отладка
+2. **С Docker:**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
 
-### Просмотр логов
+## 📚 Документация
 
-```bash
-# Docker версия
-docker-compose logs -f
+- [Настройка Telegram авторизации](README_TELEGRAM_AUTH.md)
+- [Настройка Docker](README_DOCKER.md)
+- [Быстрый старт](QUICK_START.md)
+- [Настройка системы](SETUP.md)
+- [Настройка Cloudflare туннеля](CLOUDFLARE_TUNNEL_GUIDE.md)
+- [Внешние API](EXTERNAL_API_GUIDE.md)
+- [Уведомления Telegram](TELEGRAM_NOTIFICATIONS_GUIDE.md)
 
-# Локальная версия
-# Логи выводятся в консоль
-```
+## 🛠 Основные скрипты
 
-### Проверка здоровья
+- `start-full-docker.sh` - Запуск полной системы в Docker
+- `start-dev.sh` - Запуск для разработки
+- `start-prod.sh` - Запуск продакшн версии
+- `deploy-render.sh` - Развертывание на Render
+- `build.sh` - Сборка проекта
 
-```bash
-curl http://localhost:8000/api/health
-```
+## 🔧 Технологии
 
-### Подключение к базе данных
+- **Backend:** FastAPI, SQLAlchemy, Alembic, PostgreSQL
+- **Frontend:** React, TypeScript, Tailwind CSS
+- **Интеграции:** Telegram Bot API, Notion API
+- **Развертывание:** Docker, Render, Cloudflare
 
-```bash
-# Docker версия
-docker-compose exec db psql -U postgres -d hr_admin
+## 📝 Лицензия
 
-# Локальная версия
-sqlite3 backend/hr_admin.db
-```
-
-## 🚨 Устранение неполадок
-
-### Проблема: "Port already in use"
-```bash
-# Найдите процесс
-lsof -i :8000
-lsof -i :3002
-
-# Остановите процесс
-kill -9 <PID>
-```
-
-### Проблема: "Database connection failed"
-```bash
-# Docker версия
-docker-compose restart db
-
-# Локальная версия
-cd backend && python3 init_db.py
-```
-
-### Проблема: "Docker not found"
-```bash
-# Установите Docker Desktop
-# https://www.docker.com/products/docker-desktop
-```
-
-## 🤝 Поддержка
-
-При возникновении проблем:
-
-1. Проверьте логи: `docker-compose logs -f`
-2. Убедитесь, что все порты свободны
-3. Проверьте, что Docker запущен
-4. Обратитесь к разделу "Устранение неполадок"
-
-## 📄 Лицензия
-
-MIT License - см. файл [LICENSE](LICENSE)
-
-## 🎉 Готово!
-
-Система готова к использованию! 🚀
-
-Для получения дополнительной информации см. документацию в папке проекта. 
+MIT License - см. файл [LICENSE](LICENSE) 
