@@ -345,7 +345,7 @@ const Metrics: React.FC = () => {
 
               {/* Выпадающий список периодов */}
               {showPeriodSelector && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                   {periodOptions.map((option) => (
                     <button
                       key={option.value}

@@ -15,8 +15,8 @@
   margin: 0 2px;
   padding: 8px 4px;
   min-height: 55px;
-  min-width: 100px; /* увеличено с 80px */
-  max-width: 120px; /* увеличено с 100px */
+  min-width: 120px; /* увеличено с 100px */
+  max-width: 140px; /* увеличено с 120px */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -93,7 +93,7 @@
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
-  max-width: 110px; /* увеличено с 90px */
+  max-width: 130px; /* увеличено с 110px */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -323,7 +323,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 110px; /* увеличено с 90px */
+    max-width: 130px; /* увеличено с 110px */
     line-height: 1.1;
     margin-top: 2px;
   }
@@ -342,21 +342,21 @@
     .bottom-nav .nav-link {
       padding: 6px 2px;
       margin: 0 1px;
-      min-width: 80px; /* увеличено с 45px */
-      max-width: 100px; /* добавлено ограничение */
+      min-width: 100px; /* увеличено с 80px */
+      max-width: 120px; /* увеличено с 100px */
     }
   }
   
   /* Для экранов с 5+ элементами навигации */
   @media (max-width: 480px) {
     .bottom-nav .nav-link {
-      min-width: 90px; /* увеличено с 80px */
-      max-width: 110px; /* увеличено с 100px */
+      min-width: 110px; /* увеличено с 90px */
+      max-width: 130px; /* увеличено с 110px */
     }
     
     .bottom-nav .nav-text {
       font-size: 9px !important;
-      max-width: 100px; /* добавлено ограничение для текста */
+      max-width: 120px; /* увеличено с 100px */
     }
   }
 } 
