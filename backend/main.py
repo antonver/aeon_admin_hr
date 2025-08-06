@@ -9,10 +9,10 @@ import os
 import time
 
 # Импорты для работы с Render - используем относительные импорты
-from app.database import engine, Base
-from app.routers import candidates, metrics, user, telegram_auth, admins, external_api
-from app.services.telegram_service import TelegramService
-from app.services.notion_service import NotionService
+from .app.database import engine, Base
+from .app.routers import candidates, metrics, user, telegram_auth, admins, external_api
+from .app.services.telegram_service import TelegramService
+from .app.services.notion_service import NotionService
 
 load_dotenv()
 

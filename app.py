@@ -10,6 +10,9 @@ import os
 backend_path = os.path.join(os.path.dirname(__file__), 'backend')
 sys.path.insert(0, backend_path)
 
+# Добавляем корень проекта в путь для импорта app модулей
+sys.path.insert(0, os.path.dirname(__file__))
+
 # Импортируем FastAPI приложение из backend/main.py
 from main import app
 
